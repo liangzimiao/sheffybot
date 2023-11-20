@@ -1,11 +1,10 @@
 import requests
 
 from io import BytesIO
-from dataclasses import dataclass
 from loguru import logger
 from pathlib import Path
 from PIL import Image
-from typing import Optional, Literal
+from typing import Dict, Literal
 
 
 from ..config import pcr_config
@@ -13,17 +12,56 @@ from ..config import pcr_config
 pcr_data_path: Path = pcr_config.pcr_data_path
 pcr_res_path: Path = pcr_config.pcr_resources_path
 
+UNKNOWN = "1000"
+UnavailableChara = {
+    "1067",  # 穗希
+    "1069",  # 霸瞳
+    "1072",  # 可萝爹
+    "1073",  # 拉基拉基
+    "1102",  # 泳装大眼
+    "1183",  # 星弓星
+    "1184",  # 星弓栞
+    "1204",
+    "1205",
+    "1206",  # (小小甜心)
+    "1164",
+    "1194",
+    "1195",
+    "1196",
+    "1197",
+    "1200",
+    "1201",
+    "1202",
+    "1203",  # (未实装)
+}
 
-@dataclass
+
 class Chara:
     """PCR角色"""
 
-    id: str | int
-    """角色id"""
-    star: Literal[1, 3, 6, "1", "3", "6"] = 3
-    """角色星级"""
-    name: Optional[str] = "未知角色"
-    """角色名字"""
+    CHARA_NAME: Dict[str, list[str]] = {}
+
+    def __init__(
+        self, id: str | int, star: Literal[1, 3, 6, "1", "3", "6"] = 3, equip=0
+    ):
+        self.id = str(id)
+        """角色id"""
+        self.star = star
+        """角色星级"""
+        self.equip = equip
+
+    @property
+    def is_npc(self) -> bool:
+        """是否为NPC"""
+        if str(self.id) in UnavailableChara:
+            return True
+        else:
+            return not ((1000 < int(self.id) < 1214) or (1700 < int(self.id) < 1900))
+
+    @property
+    def name(self) -> str:
+        """角色名字"""
+        return self.CHARA_NAME[self.id][0] if self.id in self.CHARA_NAME else "未知角色"
 
     @property
     def icon_path(self) -> Path:
