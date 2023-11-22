@@ -9,8 +9,9 @@ license = { text = "Apache-2.0" }
 dependencies = [
     "nonebot2[fastapi,httpx,websockets]<3.0.0,>=2.0.1",
     "nonebot-adapter-qq>=1.1.0",
-    "nonebot-plugin-alconna<1.0.0,>=0.31.0",
+    "nonebot-plugin-alconna>=0.33.6",
     "nonebot-plugin-apscheduler<1.0.0,>=0.3.0",
+    "arclet-alconna>=1.7.37",
 ]
 
 
@@ -20,6 +21,7 @@ PCR = [
     "pillow>=10.1.0",
     "pytz>=2023.3.post1",
     "fuzzywuzzy>=0.18.0",
+    "python-Levenshtein>=0.23.0",
     "zhconv>=1.4.3",
 ]
 
