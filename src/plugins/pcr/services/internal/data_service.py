@@ -77,251 +77,6 @@ class PCRDataService:
     def __init__(self) -> None:
         pcr_res_path.mkdir(parents=True, exist_ok=True)
         pcr_data_path.mkdir(parents=True, exist_ok=True)
-        pass
-
-    @staticmethod
-    def get_chara_name() -> Dict:
-        """
-        拿到本地chara_name数据
-        """
-        try:
-            with open(pcr_data_path / "chara_name.json", "r", encoding="utf-8") as file:
-                data = json.load(file)
-        except Exception:
-            data = {}
-        return data
-
-    @staticmethod
-    def get_chara_profile() -> Dict:
-        """
-        拿到本地chara_profile数据
-        """
-        try:
-            with open(
-                pcr_data_path / "chara_profile.json", "r", encoding="utf-8"
-            ) as file:
-                data = json.load(file)
-        except Exception:
-            data = {}
-        return data
-
-    @staticmethod
-    def get_local_pool() -> Dict:
-        """
-        拿到本地local_pool数据
-        """
-        try:
-            with open(pcr_data_path / "local_pool.json", "r", encoding="utf-8") as file:
-                data = json.load(file)
-        except Exception:
-            data = {}
-        return data
-
-    @staticmethod
-    def get_local_pool_ver() -> Dict:
-        """
-        拿到本地local_pool_ver数据
-        """
-        try:
-            with open(
-                pcr_data_path / "local_pool_ver.json", "r", encoding="utf-8"
-            ) as file:
-                data = json.load(file)
-        except Exception:
-            data = {}
-        return data
-
-    @classmethod
-    def get_chara_name_id(cls) -> Dict:
-        """
-        拿到本地chara_name_id数据
-        """
-        data = {}
-        for idx, names in cls.CHARA_NAME.items():
-            for n in names:
-                n = normalize_str(n)
-                if n not in data:
-                    data[n] = idx
-                else:
-                    logger.warning(
-                        f"priconne.chara.Roster: 出现重名{n}于id{idx}与id{data[n]}相同"
-                    )
-        return data
-
-    @classmethod
-    async def get_online_chara_name(
-        cls, url: str = online_pcr_data_url2
-    ) -> Dict[str, list[str]]:
-        """
-        获取在线的角色数据信息, 并处理为json格式
-        """
-        logger.info(f"开始获取在线角色数据from:{url}")
-        try:
-            async with httpx.AsyncClient(verify=False) as client:
-                response = await client.get(url=url, follow_redirects=True, timeout=30)
-                # 检查响应是否成功
-                if response.status_code == 200:
-                    # 将响应内容写入文件
-                    response_text = response.text
-                    # 定义一个列表，包含想要的字典的名称
-                    content_names = "CHARA_NAME"
-                    # 将文件内容转换为AST对象
-                    tree = ast.parse(response_text)
-                    # 定义一个空字典，用于存储三个数据
-                    data = {}
-                    # 遍历抽象语法树中的所有节点，找到类型为ast.Assign的节点
-                    for node in ast.walk(tree):
-                        # 如果节点是一个赋值语句
-                        if isinstance(node, ast.Assign):
-                            # 获取赋值语句的左边的变量名
-                            name = node.targets[0].id  # type: ignore
-                            # 如果变量名是您想要的数据之一
-                            if name is content_names:
-                                # 将赋值语句的右边的值转换为Python对象，并存储到字典中
-                                data = ast.literal_eval(node.value)
-                                return {str(k): v for k, v in data.items()}
-                            else:
-                                data = {}
-                    return data
-                else:
-                    logger.error(f"获取在线角色数据时发生错误{response.status_code}")
-                    return {}
-        except Exception as e:
-            logger.error(f"获取在线角色数据时发生错误 请求错误：{type(e)}")
-            return {}
-
-    @classmethod
-    async def get_online_chara_profile(
-        cls, url: str = online_pcr_data_url2
-    ) -> Dict[str, Dict[str, str]]:
-        """
-        获取在线的角色档案信息, 并处理为json格式
-        """
-        logger.info("开始获取在线角色档案")
-        try:
-            async with httpx.AsyncClient(verify=False) as client:
-                response = await client.get(url=url, follow_redirects=True, timeout=30)
-                # 检查响应是否成功
-                if response.status_code == 200:
-                    # 将响应内容写入文件
-                    response_text = response.text
-                    # 定义一个列表，包含想要的字典的名称
-                    content_names = "CHARA_PROFILE"
-                    # 将文件内容转换为AST对象
-                    tree = ast.parse(response_text)
-                    # 定义一个空字典，用于存储三个数据
-                    data = {}
-                    # 遍历抽象语法树中的所有节点，找到类型为ast.Assign的节点
-                    for node in ast.walk(tree):
-                        # 如果节点是一个赋值语句
-                        if isinstance(node, ast.Assign):
-                            # 获取赋值语句的左边的变量名
-                            name = node.targets[0].id  # type: ignore
-                            # 如果变量名是您想要的数据之一
-                            if name is content_names:
-                                # 将赋值语句的右边的值转换为Python对象，并存储到字典中
-                                data = ast.literal_eval(node.value)
-                                return {str(k): v for k, v in data.items()}
-                            else:
-                                data = {}
-                    return data
-                else:
-                    logger.error(f"获取在线角色档案时发生错误{response.status_code}")
-                    return {}
-        except Exception as e:
-            logger.error(f"获取在线角色档案时发生错误 请求错误：{type(e)}")
-            return {}
-
-    @classmethod
-    async def get_online_pool_ver(cls, url: str = online_pool_ver_url) -> Dict:
-        """
-        获取在线版本号
-        """
-        try:
-            async with httpx.AsyncClient(verify=False) as client:
-                response = await client.get(url=url, follow_redirects=True, timeout=30)
-                if response.status_code == 200:
-                    online_pool_ver_json = response.json()
-                    online_pool_ver = online_pool_ver_json
-                    logger.info(f"检查卡池更新, 在线卡池版本{online_pool_ver}")
-                    return online_pool_ver
-                else:
-                    logger.error(f"获取在线卡池版本时发生错误{response.status_code}")
-                    return {}
-        except Exception as e:
-            logger.error(f"获取在线卡池版本时发生错误 {type(e)}")
-            return {}
-
-    @classmethod
-    async def get_online_pool(cls, url: str = online_pool_url) -> Dict:
-        """
-        获取在线卡池, 返回json格式
-        """
-        logger.info("开始获取在线卡池")
-        try:
-            async with httpx.AsyncClient(verify=False) as client:
-                response = await client.get(url=url, follow_redirects=True, timeout=30)
-                if response.status_code == 200:
-                    online_pool = response.json()
-                    return online_pool
-                else:
-                    logger.error(f"获取在线卡池时发生错误{response.status_code}")
-                    return {}
-        except Exception as e:
-            logger.error(f"获取在线卡池时发生错误 {type(e)}")
-            return {}
-
-    @classmethod
-    def ids2names(cls, ids: List[str]) -> list:
-        """
-        根据ID转换为官方译名,为了与现行卡池兼容
-        """
-        # print(ids)
-        res = [
-            cls.CHARA_NAME[str(id)][0]
-            if str(id) in cls.CHARA_NAME
-            else logger.warning(f"缺少角色{id}的信息, 请注意更新静态资源   ")
-            for id in ids
-        ]
-        return res
-
-    @staticmethod
-    def merge_dicts(
-        dict1: Dict[str, list[str]],
-        dict2: Dict[str, list[str]],
-        is_info: bool = False,
-    ) -> Dict[str, list[str]]:
-        # 创建一个新的字典来存储结果
-        result = {}
-        # 遍历第一个字典，将其内容添加到结果字典中
-        for key, value in dict1.items():
-            if key not in result:
-                result[key] = value
-            else:
-                result[key] += value
-        # 遍历第二个字典，将其内容添加到结果字典中
-        for key, value in dict2.items():
-            if key not in result:
-                result[key] = value
-            else:
-                result[key] += value
-        for key in result:
-            # 由于返回数据可能出现全半角重复, 做一定程度的兼容性处理, 会将所有全角替换为半角, 并移除重别称
-            for i, name in enumerate(result[key]):
-                name_format = name.replace("（", "(")
-                name_format = name_format.replace("）", ")")
-                name_format = normalize_str(name_format)
-                result[key][i] = name_format
-            n = result[key][0]
-            group = {f"{n}"}
-            # 转集合再转列表, 移除重复元素, 按原名日文优先顺序排列
-            m = list(set(result[key]))
-            sort_priority(m, group)
-            result[key] = m
-            if is_info:
-                if key not in dict2 or len(result[key]) != len(dict2[key]):
-                    logger.info(f"已开始更新角色{key}的数据和图标")
-        return result
 
     async def load_data(self) -> None:
         """
@@ -337,25 +92,29 @@ class PCRDataService:
         if not PCRDataService.CHARA_NAME:
             logger.info("未检测到PCR_CHARA_NAME数据 将重新生成")
             await self.update_chara_name()
+            PCRDataService.CHARA_NAME = self.get_chara_name()
         if not self.CHARA_NAME_ID:
             logger.info("未检测到PCR_CHARA_NAME_ID数据 将重新生成")
             PCRDataService.CHARA_NAME_ID = self.get_chara_name_id()
         if not self.CHARA_PROFILE:
             logger.info("未检测到PCR_CHARA_PROFILE数据 将重新生成")
             await self.update_chara_profile()
+            PCRDataService.CHARA_PROFILE = self.get_chara_profile()
         if not self.LOCAL_POOL:
             logger.info("未检测到PCR_LOCAL_POOL数据 将重新生成")
             await self.update_local_pool()
+            PCRDataService.LOCAL_POOL = self.get_local_pool()
         if not self.LOCAL_POOL_VER:
             logger.info("未检测到PCR_LOCAL_POOL_VER数据 将重新生成")
             await self.update_local_pool_ver()
+            PCRDataService.LOCAL_POOL_VER = self.get_local_pool_ver()
 
         Chara.CHARA_NAME = self.CHARA_NAME
         ver = self.LOCAL_POOL_VER["ver"]
         logger.success("成功加载PCR_DATA全部数据")
-        logger.success(f"CHARA_NAME:{len(self.CHARA_NAME)}")
-        logger.success(f"CHARA_PROFILE:{len(self.CHARA_PROFILE)}")
-        logger.success(f"LOCAL_POOL_VER:{ver}")
+        logger.success(f"PCR_CHARA_NAME:{len(self.CHARA_NAME)}")
+        logger.success(f"PCR_CHARA_PROFILE:{len(self.CHARA_PROFILE)}")
+        logger.success(f"LOCAL_PCR_POOL_VER:{ver}")
 
     async def update_chara_name(self) -> None:
         """
@@ -401,7 +160,6 @@ class PCRDataService:
         # 保存新数据
         with open(pcr_data_path / "chara_profile.json", "w", encoding="utf-8") as file:
             json.dump(local_chara_profile, file, indent=4, ensure_ascii=False)
-        logger.success("PCR_CHARA_PROFILE 成功保存至本地")
         logger.success("PCR_CHARA_PROFILE 更新完成")
 
     async def update_local_pool(self) -> None:
@@ -469,8 +227,270 @@ class PCRDataService:
             json.dump(local_pool_ver, file, indent=4, ensure_ascii=False)
         logger.success("PCR_LOCAL_POOL_VER 更新完成")
 
+    @classmethod
+    def get_chara_name(cls) -> Dict:
+        """
+        拿到本地chara_name数据
+        """
+        try:
+            with open(pcr_data_path / "chara_name.json", "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except Exception:
+            data = {}
+        return data
 
-pcr_date = PCRDataService()
+    @classmethod
+    def get_chara_profile(cls) -> Dict:
+        """
+        拿到本地chara_profile数据
+        """
+        try:
+            with open(
+                pcr_data_path / "chara_profile.json", "r", encoding="utf-8"
+            ) as file:
+                data = json.load(file)
+        except Exception:
+            data = {}
+        return data
+
+    @classmethod
+    def get_local_pool(cls) -> Dict:
+        """
+        拿到本地local_pool数据
+        """
+        try:
+            with open(pcr_data_path / "local_pool.json", "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except Exception:
+            data = {}
+        return data
+
+    @classmethod
+    def get_local_pool_ver(cls) -> Dict:
+        """
+        拿到本地local_pool_ver数据
+        """
+        try:
+            with open(
+                pcr_data_path / "local_pool_ver.json", "r", encoding="utf-8"
+            ) as file:
+                data = json.load(file)
+        except Exception:
+            data = {}
+        return data
+
+    @classmethod
+    def get_chara_name_id(cls) -> Dict:
+        """
+        拿到本地chara_name_id数据
+        """
+        data = {}
+        for idx, names in cls.CHARA_NAME.items():
+            for n in names:
+                n = normalize_str(n)
+                if n not in data:
+                    data[n] = idx
+                else:
+                    logger.warning(
+                        f"Priconne.Chara: 出现重名{n}于id{idx}与id{data[n]}相同"
+                    )
+        return data
+
+    @classmethod
+    def ids2names(cls, ids: List[str]) -> list:
+        """
+        根据ID转换为官方译名,为了与现行卡池兼容
+        """
+        # print(ids)
+        res = [
+            cls.CHARA_NAME[str(id)][0]
+            if str(id) in cls.CHARA_NAME
+            else logger.warning(f"缺少角色{id}的信息, 请注意更新静态资源   ")
+            for id in ids
+        ]
+        return res
+
+    @staticmethod
+    async def get_online_chara_name(
+        url: str = online_pcr_data_url2
+    ) -> Dict[str, list[str]]:
+        """
+        获取在线的角色数据信息, 并处理为json格式
+        """
+        logger.info(f"开始获取在线角色数据from:{url}")
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                response = await client.get(url=url, follow_redirects=True, timeout=30)
+                # 检查响应是否成功
+                if response.status_code == 200:
+                    # 将响应内容写入文件
+                    response_text = response.text
+                    # 定义一个列表，包含想要的字典的名称
+                    content_names = "CHARA_NAME"
+                    # 将文件内容转换为AST对象
+                    tree = ast.parse(response_text)
+                    # 定义一个空字典，用于存储三个数据
+                    data = {}
+                    # 遍历抽象语法树中的所有节点，找到类型为ast.Assign的节点
+                    for node in ast.walk(tree):
+                        # 如果节点是一个赋值语句
+                        if isinstance(node, ast.Assign):
+                            # 获取赋值语句的左边的变量名
+                            name = node.targets[0].id  # type: ignore
+                            # 如果变量名是您想要的数据之一
+                            if name is content_names:
+                                # 将赋值语句的右边的值转换为Python对象，并存储到字典中
+                                data = ast.literal_eval(node.value)
+                                return {str(k): v for k, v in data.items()}
+                            else:
+                                data = {}
+                    return data
+                else:
+                    logger.error(f"获取在线角色数据时发生错误{response.status_code}")
+                    return {}
+        except Exception as e:
+            logger.error(f"获取在线角色数据时发生错误 请求错误：{type(e)}")
+            return {}
+
+    @staticmethod
+    async def get_online_chara_profile(
+        url: str = online_pcr_data_url2
+    ) -> Dict[str, Dict[str, str]]:
+        """
+        获取在线的角色档案信息, 并处理为json格式
+        """
+        logger.info(f"开始获取在线角色档案from:{url}")
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                response = await client.get(url=url, follow_redirects=True, timeout=30)
+                # 检查响应是否成功
+                if response.status_code == 200:
+                    # 将响应内容写入文件
+                    response_text = response.text
+                    # 定义一个列表，包含想要的字典的名称
+                    content_names = "CHARA_PROFILE"
+                    # 将文件内容转换为AST对象
+                    tree = ast.parse(response_text)
+                    # 定义一个空字典，用于存储三个数据
+                    data = {}
+                    # 遍历抽象语法树中的所有节点，找到类型为ast.Assign的节点
+                    for node in ast.walk(tree):
+                        # 如果节点是一个赋值语句
+                        if isinstance(node, ast.Assign):
+                            # 获取赋值语句的左边的变量名
+                            name = node.targets[0].id  # type: ignore
+                            # 如果变量名是您想要的数据之一
+                            if name is content_names:
+                                # 将赋值语句的右边的值转换为Python对象，并存储到字典中
+                                data = ast.literal_eval(node.value)
+                                return {str(k): v for k, v in data.items()}
+                            else:
+                                data = {}
+                    return data
+                else:
+                    logger.error(f"获取在线角色档案时发生错误{response.status_code}")
+                    return {}
+        except Exception as e:
+            logger.error(f"获取在线角色档案时发生错误 请求错误：{type(e)}")
+            return {}
+
+    @staticmethod
+    async def get_online_pool_ver(url: str = online_pool_ver_url) -> Dict:
+        """
+        获取在线版本号
+        """
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                response = await client.get(url=url, follow_redirects=True, timeout=30)
+                if response.status_code == 200:
+                    online_pool_ver_json = response.json()
+                    online_pool_ver = online_pool_ver_json
+                    logger.info(f"检查卡池更新, 在线卡池版本{online_pool_ver}")
+                    return online_pool_ver
+                else:
+                    logger.error(f"获取在线卡池版本时发生错误{response.status_code}")
+                    return {}
+        except Exception as e:
+            logger.error(f"获取在线卡池版本时发生错误 {type(e)}")
+            return {}
+
+    @staticmethod
+    async def get_online_pool(url: str = online_pool_url) -> Dict:
+        """
+        获取在线卡池, 返回json格式
+        """
+        logger.info("开始获取在线卡池from:" + url)
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                response = await client.get(url=url, follow_redirects=True, timeout=30)
+                if response.status_code == 200:
+                    online_pool = response.json()
+                    return online_pool
+                else:
+                    logger.error(f"获取在线卡池时发生错误{response.status_code}")
+                    return {}
+        except Exception as e:
+            logger.error(f"获取在线卡池时发生错误 {type(e)}")
+            return {}
+
+    @staticmethod
+    def merge_dicts(
+        dict1: Dict[str, list[str]],
+        dict2: Dict[str, list[str]],
+        is_info: bool = False,
+    ) -> Dict[str, list[str]]:
+        """
+        合并两个字典并返回结果。
+
+        参数:
+            dict1 (Dict[str, list[str]]): 第一个要合并的字典。
+            dict2 (Dict[str, list[str]]): 第二个要合并的字典。
+            is_info (bool, optional): 是否记录额外信息的标志。默认为 False。
+
+        返回:
+            Dict[str, list[str]]: 合并后的字典。
+
+        注意:
+            - 函数根据键合并两个字典的值。
+            - 如果一个键在两个字典中都存在，则将值连接起来。
+            - 函数对值进行一些兼容性处理。
+            - 如果 `is_info` 为 True，则会记录某些情况下的额外信息。
+
+        """
+        # 创建一个新的字典来存储结果
+        result = {}
+        # 遍历第一个字典，将其内容添加到结果字典中
+        for key, value in dict1.items():
+            if key not in result:
+                result[key] = value
+            else:
+                result[key] += value
+        # 遍历第二个字典，将其内容添加到结果字典中
+        for key, value in dict2.items():
+            if key not in result:
+                result[key] = value
+            else:
+                result[key] += value
+        for key in result:
+            # 由于返回数据可能出现全半角重复, 做一定程度的兼容性处理, 会将所有全角替换为半角, 并移除重别称
+            for i, name in enumerate(result[key]):
+                name_format = name.replace("（", "(")
+                name_format = name_format.replace("）", ")")
+                name_format = normalize_str(name_format)
+                result[key][i] = name_format
+            n = result[key][0]
+            group = {f"{n}"}
+            # 转集合再转列表, 移除重复元素, 按原名日文优先顺序排列
+            m = list(set(result[key]))
+            sort_priority(m, group)
+            result[key] = m
+            if is_info:
+                if key not in dict2 or len(result[key]) != len(dict2[key]):
+                    logger.info(f"已开始更新角色{key}的数据和图标")
+        return result
+
+
+pcr_data = PCRDataService()
 
 
 class CharaDataService:
@@ -503,8 +523,8 @@ class CharaDataService:
         """
         name = normalize_str(name)
         return (
-            pcr_date.CHARA_NAME_ID[name]
-            if name in pcr_date.CHARA_NAME_ID
+            pcr_data.CHARA_NAME_ID[name]
+            if name in pcr_data.CHARA_NAME_ID
             else self.UNKNOWN
         )
 
@@ -556,8 +576,8 @@ class CharaDataService:
         返回：
             tuple：包含猜测的ID、名称和得分的元组。
         """
-        name, score = self.match(name, pcr_date.CHARA_NAME_ID.keys())
-        return pcr_date.CHARA_NAME_ID[name], name, score
+        name, score = self.match(name, pcr_data.CHARA_NAME_ID.keys())
+        return pcr_data.CHARA_NAME_ID[name], name, score
 
 
 chara_data = CharaDataService()
