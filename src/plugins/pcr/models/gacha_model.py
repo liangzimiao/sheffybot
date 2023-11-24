@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import TypedDict, Dict, List, NamedTuple, Union
+from .chara_model import Chara
 
 
 class GachaData(TypedDict):
