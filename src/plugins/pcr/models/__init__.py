@@ -1,3 +1,4 @@
-from .chara_model import Chara  # noqa: F401
-from .gacha_model import GachaData  # noqa: F401
-from .whois_model import WhoIsGuessResult  # noqa: F401
+from .chara_model import Chara as Chara
+from .gacha_model import GachaData as GachaData
+from .update_model import UpdateResult as UpdateResult
+from .whois_model import WhoIsGuessResult as WhoIsGuessResult

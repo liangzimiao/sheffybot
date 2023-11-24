@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 
+from ..models import Chara
+
 
 @dataclass
 class WhoIsGuessResult:
-    is_guess: bool
-    """是否为猜测结果"""
-    probability: int
-    """可能性"""
+    score: int
+    """匹配度"""
     guess_name: str
     """匹配到的名字"""
+    guess_chara: Chara
+    """匹配到的角色"""

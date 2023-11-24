@@ -2,18 +2,19 @@
 import ast
 import difflib
 import json
-import httpx
 import unicodedata
-import zhconv
-
-from loguru import logger
-from fuzzywuzzy import fuzz
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, List, Literal
 
+import httpx
+import zhconv
+from fuzzywuzzy import fuzz
+from loguru import logger
+from PIL import Image
 
-from ...models import Chara
 from ...config import pcr_config
+from ...models import Chara
 
 pcr_data_path: Path = pcr_config.pcr_data_path
 """PCR数据存放路径"""
@@ -109,7 +110,6 @@ class PCRDataService:
             await self.update_local_pool_ver()
             PCRDataService.LOCAL_POOL_VER = self.get_local_pool_ver()
 
-        Chara.CHARA_NAME = self.CHARA_NAME
         ver = self.LOCAL_POOL_VER["ver"]
         logger.success("成功加载PCR_DATA全部数据")
         logger.success(f"PCR_CHARA_NAME:{len(self.CHARA_NAME)}")
@@ -495,8 +495,37 @@ pcr_data = PCRDataService()
 
 class CharaDataService:
     UNKNOWN = "1000"
+    UnavailableChara = {
+        "1067",  # 穗希
+        "1069",  # 霸瞳
+        "1072",  # 可萝爹
+        "1073",  # 拉基拉基
+        "1102",  # 泳装大眼
+        "1183",  # 星弓星
+        "1184",  # 星弓栞
+        "1204",
+        "1205",
+        "1206",  # (小小甜心)
+        "1164",
+        "1194",
+        "1195",
+        "1196",
+        "1197",
+        "1200",
+        "1201",
+        "1202",
+        "1203",  # (未实装)
+    }
 
-    def match(self, query, choices):
+    def __init__(self):
+        self.card_path = pcr_res_path / "priconne" / "card"
+        self.icon_path = pcr_res_path / "priconne" / "icon"
+        self.card_path.mkdir(parents=True, exist_ok=True)
+        self.icon_path.mkdir(parents=True, exist_ok=True)
+
+    def match(
+        self, query: str, choices: list[str] = list(pcr_data.CHARA_NAME_ID.keys())
+    ) -> tuple[str, int]:
         """
         匹配给定的查询字符串和选项列表，并返回最佳匹配项及其相似度评分。
 
@@ -508,14 +537,14 @@ class CharaDataService:
             tuple：包含最佳匹配项（str）和相似度评分（int）的元组。
         """
         query = normalize_str(query)
-        a = difflib.get_close_matches(query, choices, 1, cutoff=0.6)
-        if a:
-            a = a[0]
+        match = difflib.get_close_matches(query, choices, 1, cutoff=0.6)
+        if match:
+            match = match[0]
         else:
-            a = choices[0]
-        b = fuzz.ratio(query, a)
-        logger.info(f"匹配结果 {a} 相似度{b}")
-        return a, b
+            match = choices[0]
+        score = fuzz.ratio(query, match)
+        logger.debug(f"匹配结果 {match} 相似度{score}")
+        return match, score
 
     def name2id(self, name) -> str:
         """
@@ -528,30 +557,34 @@ class CharaDataService:
             else self.UNKNOWN
         )
 
-    def from_id(
+    async def from_id(
         self,
-        id_: int | str,
-        star: Literal[1, 3, 6, "1", "3", "6"] = 3,
+        id_: str,
+        star: Literal[1, 3, 6] = 3,
         equip: int = 0,
-    ):
+    ) -> Chara:
         """
         根据提供的ID、星级和装备等级创建一个新的Chara实例。
 
         参数:
-            id_ (int): 角色的ID。
+            id_ (str): 角色的ID。
             star (int, 可选): 角色的星级。默认为3。
             equip (int, 可选): 角色的装备等级。默认为0。
         返回值:
             Chara: 具有指定ID、星级和装备等级的Chara类的新实例。
         """
-        return Chara(id_, star, equip)
+        c = Chara(id_, star, equip)
+        c.name = pcr_data.CHARA_NAME[id_][0]
+        c.icon = await self.get_chara_icon(id_, star)
+        c.card = await self.get_chara_card(id_, star)
+        return c
 
     def from_name(
         self,
         name,
-        star: Literal[1, 3, 6, "1", "3", "6"] = 3,
+        star: Literal[1, 3, 6] = 3,
         equip: int = 0,
-    ):
+    ) -> Chara:
         """
         根据角色名称、星级和装备等级创建一个新的角色实例。
 
@@ -566,18 +599,114 @@ class CharaDataService:
         id_ = self.name2id(name)
         return Chara(id_, star, equip)
 
-    def guess_id_name_score(self, name):
-        """
-        猜测给定名称的角色的ID、名称和得分。
+    async def get_chara_card(self, id: str, star) -> BytesIO:
+        card_path = self.card_path / f"card_full_{id}{star}1.png"
+        # 检查图片是否已经下载
+        if card_path.exists():
+            # 打开图片并返回BytesIO
+            with open(card_path, "rb") as f:
+                return BytesIO(f.read())
+        else:
+            # 如果没有下载,则先下载再返回
+            await self.download_chara_img(id=id, star=star, type_="card")
+            # 重新打开图片并返回BytesIO
+            return await self.get_chara_card(id=id, star=star)
 
-        参数：
-            name (str)：要猜测ID、名称和得分的角色的名称。
+    async def get_chara_icon(self, id: str, star) -> BytesIO:
+        icon_path = self.icon_path / f"icon_unit_{id}{star}1.png"
+        # 检查图片是否已经下载
+        if icon_path.exists():
+            # 打开图片并返回BytesIO
+            with open(icon_path, "rb") as f:
+                return BytesIO(f.read())
+        else:
+            # 如果没有下载,则先下载再返回
+            await self.download_chara_img(id=id, star=star, type_="icon")
+            # 重新打开图片并返回BytesIO
+            return await self.get_chara_icon(id=id, star=star)
 
-        返回：
-            tuple：包含猜测的ID、名称和得分的元组。
+    async def download_chara_img(
+        self, id: str, star: int, type_: Literal["card", "icon"]
+    ):
         """
-        name, score = self.match(name, pcr_data.CHARA_NAME_ID.keys())
-        return pcr_data.CHARA_NAME_ID[name], name, score
+        从指定的URL下载角色图像并将其保存到本地。
+
+        参数:
+            id (str): 角色的ID。
+            star (int): 角色的星级。
+            type_ (Literal["card", "icon"]): 要下载的图像类型，可以是"card"或"icon"。
+
+        异常:
+            Exception: 如果下载过程中出现错误。
+        """
+        if type_ == "icon":
+            url = f"https://redive.estertion.win/icon/unit/{id}{star}1.webp"
+            save_path = self.icon_path / f"icon_unit_{id}{star}1.png"
+        elif type_ == "card":
+            url = f"https://redive.estertion.win/card/full/{id}{star}1.webp"
+            save_path = self.card_path / f"card_full_{id}{star}1.png"
+
+        if save_path.exists():
+            logger.debug(f"Chara {id} {type_}已存在")
+            return
+        logger.debug(f"Downloading Chara {type_} from {url}")
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                rsp = await client.get(url, timeout=10)
+            if 200 == rsp.status_code:
+                img = Image.open(BytesIO(rsp.content))
+                img.save(save_path)
+                logger.info(f"Saved to {save_path}")
+            else:
+                logger.error(f"Failed to download {url}. HTTP {rsp.status_code}")
+        except Exception as e:
+            logger.error(f"Failed to download {url}. {type(e)}")
+
+    @staticmethod
+    async def download_chara_icon(id: str, star):
+        """
+        下载角色图标。
+        """
+        save_path = pcr_res_path / "priconne" / "icon" / f"icon_unit_{id}{star}1.png"
+        url = f"https://redive.estertion.win/icon/unit/{id}{star}1.webp"
+        if save_path.exists():
+            logger.debug(f"Chara {id} icon 已存在")
+            return
+        logger.debug(f"Downloading Chara icon from {url}")
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                rsp = await client.get(url, timeout=10)
+                if 200 == rsp.status_code:
+                    img = Image.open(BytesIO(rsp.content))
+                    img.save(save_path)
+                    logger.info(f"Saved to {save_path}")
+                else:
+                    logger.error(f"Failed to download {url}. HTTP {rsp.status_code}")
+        except Exception as e:
+            logger.error(f"Failed to download {url}. {type(e)}")
+
+    @staticmethod
+    async def download_chara_card(id: str, star):
+        """
+        下载角色卡面
+        """
+        save_path = pcr_res_path / "priconne" / "card" / f"card_full_{id}{star}1.png"
+        url = f"https://redive.estertion.win/card/full/{id}{star}1.webp"
+        if save_path.exists():
+            logger.debug(f"Chara {id} card 已存在")
+            return
+        logger.debug(f"Downloading Chara card from {url}")
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                rsp = await client.get(url, timeout=10)
+                if 200 == rsp.status_code:
+                    img = Image.open(BytesIO(rsp.content))
+                    img.save(save_path)
+                    logger.info(f"Saved to {save_path}")
+                else:
+                    logger.error(f"Failed to download {url}. HTTP {rsp.status_code}")
+        except Exception as e:
+            logger.error(f"Failed to download {url}. {type(e)}")
 
 
 chara_data = CharaDataService()

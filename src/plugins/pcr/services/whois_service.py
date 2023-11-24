@@ -1,41 +1,26 @@
-from typing import Union
-from .internal.data_service import pcr_date
-from .internal.data_service import chara_data
 from ..models import WhoIsGuessResult
+from .internal.data_service import chara_data
 
 
 class WhoIsService:
-    def __init__(self):
-        pass
-
-    def get_whois_info(self, domain):
+    async def guess_chara(self, name: str) -> WhoIsGuessResult:
         """
-        获取域名的whois信息
-        :param domain:
-        :return:
-        """
-        pass
+        根据给定的角色名猜测角色。
 
-    def get_whois_info_by_ip(self, ip):
-        """
-        根据ip获取whois信息
-        :param ip:
-        :return:
-        """
-        pass
+        参数:
+            name (str): 角色名。
 
-    def name2id(self, name):
-        pass
-
-    async def guess_name(self, name) -> WhoIsGuessResult:
+        返回:
+            WhoIsGuessResult: 角色猜测结果。
+        """
         id = chara_data.name2id(name)
-        probability = 100
-        is_guess = False
         guess_name = name
+        score = 100
         if id == chara_data.UNKNOWN:
-            id, guess_name, probability = chara_data.guess_id(name)
-            is_guess = True
-        c = chara_data.from_id(id)
-        return WhoIsGuessResult(
-            is_guess=is_guess, probability=probability, guess_name=guess_name
-        )
+            (
+                guess_name,
+                score,
+            ) = chara_data.match(name)
+            id = chara_data.name2id(guess_name)
+        c = await chara_data.from_id(id)
+        return WhoIsGuessResult(score=score, guess_name=guess_name, guess_chara=c)
