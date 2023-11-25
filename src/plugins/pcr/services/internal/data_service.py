@@ -289,7 +289,7 @@ class PCRDataService:
         result = {"success": 0, "duplicate": 0}
         for idx, names in cls.CHARA_NAME.items():
             for n in names:
-                n = normalize_str(n)
+                # n = normalize_str(n)
                 if n not in data:
                     data[n] = idx
                     result["success"] += 1
@@ -481,7 +481,7 @@ class PCRDataService:
             for i, name in enumerate(result[key]):
                 name_format = name.replace("（", "(")
                 name_format = name_format.replace("）", ")")
-                name_format = normalize_str(name_format)
+                # name_format = normalize_str(name_format)
                 result[key][i] = name_format
             n = result[key][0]
             group = {f"{n}"}
@@ -543,7 +543,7 @@ class CharaDataService:
         """
         if not choices:
             choices = list(pcr_data.CHARA_NAME_ID.keys())
-        query = normalize_str(query)
+        # query = normalize_str(query)
         match = difflib.get_close_matches(query, choices, 1, cutoff=0.6)
         if match:
             match = match[0]
@@ -557,7 +557,7 @@ class CharaDataService:
         """
         根据给定的名称转换成对应的ID。
         """
-        name = normalize_str(name)
+        # name = normalize_str(name)
         return (
             pcr_data.CHARA_NAME_ID[name]
             if name in pcr_data.CHARA_NAME_ID
