@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from io import BytesIO
-from typing import Optional
+from typing import Literal, Optional
 
 
 @dataclass
 class Chara:
     id: str
     """角色id"""
-    star: int
+    star: Literal[1, 3, 6]
     """角色星级"""
     equip: int
     """角色装备"""

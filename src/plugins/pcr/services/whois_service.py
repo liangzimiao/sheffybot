@@ -16,11 +16,16 @@ class WhoIsService:
         id = chara_data.name2id(name)
         guess_name = name
         score = 100
+        is_guess = False
         if id == chara_data.UNKNOWN:
             (
                 guess_name,
                 score,
             ) = chara_data.match(name)
             id = chara_data.name2id(guess_name)
-        c = await chara_data.from_id(id)
-        return WhoIsGuessResult(score=score, guess_name=guess_name, guess_chara=c)
+            is_guess = True
+        c = chara_data.from_id(id)
+        c.icon = await chara_data.get_chara_icon(id)
+        return WhoIsGuessResult(
+            score=score, is_guess=is_guess, guess_name=guess_name, guess_chara=c
+        )

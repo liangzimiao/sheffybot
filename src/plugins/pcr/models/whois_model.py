@@ -7,6 +7,8 @@ from ..models import Chara
 class WhoIsGuessResult:
     score: int
     """匹配度"""
+    is_guess: bool
+    """是否是猜测结果"""
     guess_name: str
     """匹配到的名字"""
     guess_chara: Chara

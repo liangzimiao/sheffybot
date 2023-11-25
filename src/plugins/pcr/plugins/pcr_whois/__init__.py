@@ -35,17 +35,24 @@ async def _(event: GuildMessageEvent):
     if not name:
         return
     result: WhoIsGuessResult = await whois_service.guess_chara(name)
+    if result.score < 60:
+        return
     c = result.guess_chara
     assert c.icon is not None and c.name is not None
-    if result.score == 100:
-        msg = MessageSegment.file_image(c.icon) + MessageSegment.text(c.name)
-        await whois_matcher.send(msg, at_sender=True)
-    elif result.score >= 60:
+    if result.is_guess:
         msg = f'兰德索尔似乎没有叫"{name}"的人...'
         await whois_matcher.send(msg)
         msg = (
-            MessageSegment.text(f"您有{result.score}%的可能在找{result.guess_name}")
+            MessageSegment.mention_user(event.get_user_id())
+            + MessageSegment.text(f"您有{result.score}%的可能在找{result.guess_name}")
             + MessageSegment.file_image(c.icon)
             + MessageSegment.text(c.name)
         )
-        await whois_matcher.send(msg, at_sender=True)
+        await whois_matcher.send(msg)
+    else:
+        msg = (
+            MessageSegment.mention_user(event.get_user_id())
+            + MessageSegment.file_image(c.icon)
+            + MessageSegment.text(c.name)
+        )
+        await whois_matcher.send(msg)

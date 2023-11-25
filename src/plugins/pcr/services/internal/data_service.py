@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import ast
+import asyncio
 import difflib
 import json
 import unicodedata
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional, overload
 
 import httpx
 import zhconv
@@ -285,15 +286,19 @@ class PCRDataService:
         拿到本地chara_name_id数据
         """
         data = {}
+        result = {"success": 0, "duplicate": 0}
         for idx, names in cls.CHARA_NAME.items():
             for n in names:
                 n = normalize_str(n)
                 if n not in data:
                     data[n] = idx
+                    result["success"] += 1
                 else:
+                    result["duplicate"] += 1
                     logger.warning(
                         f"Priconne.Chara: 出现重名{n}于id{idx}与id{data[n]}相同"
                     )
+        logger.info(f"Priconne.Chara: {result}")
         return data
 
     @classmethod
@@ -536,6 +541,8 @@ class CharaDataService:
         返回：
             tuple：包含最佳匹配项（str）和相似度评分（int）的元组。
         """
+        if not choices:
+            choices = list(pcr_data.CHARA_NAME_ID.keys())
         query = normalize_str(query)
         match = difflib.get_close_matches(query, choices, 1, cutoff=0.6)
         if match:
@@ -557,7 +564,7 @@ class CharaDataService:
             else self.UNKNOWN
         )
 
-    async def from_id(
+    def from_id(
         self,
         id_: str,
         star: Literal[1, 3, 6] = 3,
@@ -575,8 +582,6 @@ class CharaDataService:
         """
         c = Chara(id_, star, equip)
         c.name = pcr_data.CHARA_NAME[id_][0]
-        c.icon = await self.get_chara_icon(id_, star)
-        c.card = await self.get_chara_card(id_, star)
         return c
 
     def from_name(
@@ -590,16 +595,16 @@ class CharaDataService:
 
         参数:
             name (str): 角色的名称。
-            star (int或str): 角色的星级。默认为3。
+            star (int): 角色的星级。默认为3。
             equip (int): 角色的装备等级。默认为0。
 
         返回值:
             Chara: 具有指定名称、星级和装备等级的角色实例。
         """
         id_ = self.name2id(name)
-        return Chara(id_, star, equip)
+        return self.from_id(id_, star, equip)
 
-    async def get_chara_card(self, id: str, star) -> BytesIO:
+    async def get_chara_card(self, id: str, star: Literal[1, 3, 6]) -> BytesIO:
         card_path = self.card_path / f"card_full_{id}{star}1.png"
         # 检查图片是否已经下载
         if card_path.exists():
@@ -609,20 +614,71 @@ class CharaDataService:
         else:
             # 如果没有下载,则先下载再返回
             await self.download_chara_img(id=id, star=star, type_="card")
+            if not card_path.exists():
+                return await self.get_chara_card(id=id, star=3)
             # 重新打开图片并返回BytesIO
             return await self.get_chara_card(id=id, star=star)
 
-    async def get_chara_icon(self, id: str, star) -> BytesIO:
-        icon_path = self.icon_path / f"icon_unit_{id}{star}1.png"
-        # 检查图片是否已经下载
-        if icon_path.exists():
-            # 打开图片并返回BytesIO
+    @overload
+    async def get_chara_icon(self, id: str) -> BytesIO:
+        """
+        获取给定ID的角色图标。
+
+        参数:
+            id (str): 角色的ID。
+
+        返回:
+            BytesIO: 角色图标作为BytesIO对象。
+        """
+        ...
+
+    @overload
+    async def get_chara_icon(self, id: str, star: Literal[1, 3, 6]) -> BytesIO:
+        """
+        获取指定ID和星级的角色图标。
+
+        参数:
+            id (str): 角色的ID。
+            star (int): 角色的星级。
+
+        返回:
+            BytesIO: 角色图标的字节流对象。
+        """
+        ...
+
+    async def get_chara_icon(
+        self, id: str, star: Optional[Literal[1, 3, 6]] = None
+    ) -> BytesIO:
+        if star is None:
+            icon_path = self.icon_path / f"icon_unit_{id}61.png"
+            if not icon_path.exists():
+                icon_path = self.icon_path / f"icon_unit_{id}31.png"
+            if not icon_path.exists():
+                icon_path = self.icon_path / f"icon_unit_{id}11.png"
+            if not icon_path.exists():
+                await asyncio.gather(
+                    self.download_chara_img(id=id, star=6, type_="icon"),
+                    self.download_chara_img(id=id, star=3, type_="icon"),
+                    self.download_chara_img(id=id, star=1, type_="icon"),
+                )
+                icon_path = self.icon_path / f"icon_unit_{id}61.png"
+            if not icon_path.exists():
+                icon_path = self.icon_path / f"icon_unit_{id}31.png"
+            if not icon_path.exists():
+                icon_path = self.icon_path / f"icon_unit_{id}11.png"
+            if not icon_path.exists():
+                icon_path = self.icon_path / f"icon_unit_{self.UNKNOWN}.png"
             with open(icon_path, "rb") as f:
                 return BytesIO(f.read())
         else:
-            # 如果没有下载,则先下载再返回
-            await self.download_chara_img(id=id, star=star, type_="icon")
-            # 重新打开图片并返回BytesIO
+            icon_path = self.icon_path / f"icon_unit_{id}{star}1.png"
+            if icon_path.exists():
+                with open(icon_path, "rb") as f:
+                    return BytesIO(f.read())
+            else:
+                await self.download_chara_img(id=id, star=star, type_="icon")
+                if not icon_path.exists():
+                    return await self.get_chara_icon(id=id, star=3)
             return await self.get_chara_icon(id=id, star=star)
 
     async def download_chara_img(
