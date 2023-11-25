@@ -1,12 +1,7 @@
 # sheffybot
 
-## How to start
+## 特别感谢
 
-1. generate project using `nb create` .
-2. create your plugin using `nb plugin create` .
-3. writing your plugins under `src/plugins` folder.
-4. run your bot using `nb run --reload` .
-
-## Documentation
-
-See [Docs](https://nonebot.dev/)
+- [Ice-Cirno / HoshinoBot](https://github.com/Ice-Cirno/HoshinoBot)
+- [AkiraXie / hoshino.nb2](https://github.com/AkiraXie/hoshino.nb2)
+- [nonebot / nonebot2](https://github.com/nonebot/nonebot2)
