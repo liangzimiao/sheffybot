@@ -122,11 +122,12 @@ class PCRDataService:
         对比本地和远程的_pcr_data.py, 自动补充本地没有的角色信息, 已有角色信息进行补全
         """
         # 获取线上角色信息
-        online1 = await self.get_online_chara_name(url=online_pcr_data_url)
+        # online1 = await self.get_online_chara_name(url=online_pcr_data_url)
+        online1 = {}
         online2 = await self.get_online_chara_name(url=online_pcr_data_url2)
         online_chara_name = self.merge_dicts(online2, online1)
-        if (not online2) or (not online1):
-            logger.warning("Online_chara_name is None")
+        if not online_chara_name:
+            logger.warning("online_chara_name is None")
             return
         # 获取本地角色信息
         local_chara_name = self.CHARA_NAME.copy()
@@ -289,7 +290,7 @@ class PCRDataService:
         result = {"success": 0, "duplicate": 0}
         for idx, names in cls.CHARA_NAME.items():
             for n in names:
-                # n = normalize_str(n)
+                n = normalize_str(n)
                 if n not in data:
                     data[n] = idx
                     result["success"] += 1
@@ -543,7 +544,7 @@ class CharaDataService:
         """
         if not choices:
             choices = list(pcr_data.CHARA_NAME_ID.keys())
-        # query = normalize_str(query)
+        query = normalize_str(query)
         match = difflib.get_close_matches(query, choices, 1, cutoff=0.6)
         if match:
             match = match[0]
@@ -557,7 +558,7 @@ class CharaDataService:
         """
         根据给定的名称转换成对应的ID。
         """
-        # name = normalize_str(name)
+        name = normalize_str(name)
         return (
             pcr_data.CHARA_NAME_ID[name]
             if name in pcr_data.CHARA_NAME_ID
@@ -678,7 +679,7 @@ class CharaDataService:
             else:
                 await self.download_chara_img(id=id, star=star, type_="icon")
                 if not icon_path.exists():
-                    return await self.get_chara_icon(id=id, star=3)
+                    return await self.get_chara_icon(id=id)
             return await self.get_chara_icon(id=id, star=star)
 
     async def download_chara_img(
