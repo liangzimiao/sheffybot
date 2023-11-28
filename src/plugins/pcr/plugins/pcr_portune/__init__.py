@@ -1,14 +1,13 @@
-from nonebot.plugin import PluginMetadata
 from arclet.alconna import Alconna, Args, Option
-from nonebot_plugin_alconna import on_alconna
-
+from nonebot.adapters.qq import Message, MessageSegment
 from nonebot.adapters.qq.event import GuildMessageEvent
-from nonebot.adapters.qq import MessageSegment, Message
 from nonebot.adapters.qq.models import MessageReference
+
+from nonebot.plugin import PluginMetadata
+from nonebot_plugin_alconna import on_alconna
 
 from ...services.portune_service import DailyNumberLimiter, PortuneService
 from .config import Config, plugin_config
-
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_portune",
@@ -30,10 +29,7 @@ cmd = Alconna("抽签", Option("-c", Args["target", str]))
 pcr_portune = on_alconna(
     cmd,
     aliases={"人品", "运势"},
-    priority=0,
-    use_origin=False,  # 是否使用未经 to_me 等处理过的消息
-    use_cmd_start=True,  # 是否使用 COMMAND_START 作为命令前缀
-    use_cmd_sep=True,  # 是否使用 COMMAND_SEP 作为命令分隔符
+    priority=5
 )
 
 
