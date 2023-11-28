@@ -21,6 +21,9 @@ class Config(BaseModel, extra=Extra.ignore):
     pcr_gacha_limit: int = 0
     # PCR WHOIS配置
     pcr_whois_is_reply: bool = False
+    pcr_whois_cd: int = 0
+    # PCR GUESS配置
+    pcr_guess_is_reply: bool = False
 
 
 global_config = get_driver().config

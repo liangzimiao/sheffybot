@@ -11,7 +11,7 @@ class Chara:
     """角色星级"""
     equip: int
     """角色装备"""
-    name: Optional[str] = None
+    name: str
     """角色名字"""
     icon: Optional[BytesIO | bytes] = None
     """角色头像"""

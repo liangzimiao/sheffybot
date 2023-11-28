@@ -529,6 +529,12 @@ class CharaDataService:
         self.card_path.mkdir(parents=True, exist_ok=True)
         self.icon_path.mkdir(parents=True, exist_ok=True)
 
+    def is_npc(self, id_: str):
+        if id_ in self.UnavailableChara:
+            return True
+        else:
+            return not ((1000 < int(id_) < 1214) or (1700 < int(id_) < 1900))
+
     def match(
         self, query: str, choices: list[str] = list(pcr_data.CHARA_NAME_ID.keys())
     ) -> tuple[str, int]:
@@ -581,8 +587,7 @@ class CharaDataService:
         返回值:
             Chara: 具有指定ID、星级和装备等级的Chara类的新实例。
         """
-        c = Chara(id_, star, equip)
-        c.name = pcr_data.CHARA_NAME[id_][0]
+        c = Chara(id_, star, equip, name=pcr_data.CHARA_NAME[id_][0])
         return c
 
     def from_name(
