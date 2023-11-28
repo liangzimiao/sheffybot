@@ -21,6 +21,7 @@ from .internal.data_service import chara_data, pcr_data
 class Dao:
     def __init__(self, db_path: Path):
         self.db_path = db_path
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
         db_path.touch()
         self._create_table()
 
@@ -125,7 +126,6 @@ async def avatar_guess(game: AvatarGuessGame, patch_size=32) -> AvatarGuessGame:
     """
     ids = list(pcr_data.CHARA_NAME.keys())
     id_ = random.choice(ids)
-    print(id_, type(id_))
     while chara_data.is_npc(id_):
         id_ = random.choice(ids)
     c = chara_data.from_id(id_)

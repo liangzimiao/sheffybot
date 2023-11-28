@@ -46,7 +46,7 @@ async def avatar_guess(event: GuildMessageEvent):
     else:
         game = await guess_service.start_avatar_game(gid, patch_size)
         assert game.image and game.answer
-        print(game.image, game.answer)
+        print(game.answer.name)
         msg = MessageSegment.text(
             f"猜猜这个图片是哪位角色头像的一部分?({one_turn_time}s后公布答案)"
         ) + MessageSegment.file_image(game.image)
@@ -98,7 +98,6 @@ async def avatar_guess(event: GuildMessageEvent):
 
 def check_answer(event: GuildMessageEvent) -> bool:
     answer = event.get_message().extract_plain_text().strip()
-    print(answer)
     game = guess_service.get_game(event.guild_id)
     answer = guess_service.match_answer(answer)
     if not game:
