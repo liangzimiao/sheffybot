@@ -6,7 +6,7 @@ from typing import Optional, Union
 
 from PIL import Image
 
-from ..models import AvatarGuessGame, CardGuessGame, CharaGuessGame, VoiceGuessGame
+from ..models import AvatarGuessGame, CardGuessGame, DescGuessGame, VoiceGuessGame
 from .internal.data_service import chara_data, pcr_data
 
 
@@ -172,6 +172,29 @@ class GuessService:
         self.playing[gid] = game
         return game
 
+    async def start_desc_game(self, gid) -> DescGuessGame:
+        """
+        开始一个DescGuessGame游戏。
+
+        参数:
+            gid (str): 游戏的ID。
+
+        返回:
+            DescGuessGame: 猜角色游戏对象。
+        """
+        # 随机选择一个角色作为答案
+        id_ = random.choice(list(pcr_data.CHARA_PROFILE.keys()))
+        c = chara_data.from_id(id_)
+        c.icon = await chara_data.get_chara_icon(id_)
+        # 生成题目档案
+        profile = pcr_data.CHARA_PROFILE[id_].copy()
+        profile.pop("名字", None)
+        print(profile)
+        # 创建游戏
+        game = DescGuessGame(gid=gid, winner=None, answer=c, profile=profile)
+        self.playing[gid] = game
+        return game
+
     async def start_voice_game(self, gid) -> VoiceGuessGame:
         """
         开始一个VoiceGuessGame游戏。
@@ -184,22 +207,10 @@ class GuessService:
         """
         ...
 
-    async def start_chara_game(self, gid) -> CharaGuessGame:
-        """
-        开始一个CharaGuessGame游戏。
-
-        参数:
-            gid (str): 游戏的ID。
-
-        返回:
-            CharaGuessGame: 猜角色游戏对象。
-        """
-        ...
-
     @staticmethod
     def check_answer(
         user_answer: str,
-        game: Union[AvatarGuessGame, CardGuessGame, CharaGuessGame, VoiceGuessGame],
+        game: Union[AvatarGuessGame, CardGuessGame, DescGuessGame, VoiceGuessGame],
     ) -> bool:
         """
         判断给定的答案是否正确，根据角色数据进行判断。

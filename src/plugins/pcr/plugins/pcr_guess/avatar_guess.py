@@ -7,6 +7,7 @@
 import asyncio
 from datetime import timedelta
 
+from loguru import logger
 from nonebot.adapters.qq import GuildMessageEvent, MessageSegment
 from nonebot.plugin import on_fullmatch, on_message
 
@@ -50,7 +51,9 @@ async def avatar_guess(event: GuildMessageEvent):
         game = await guess_service.start_avatar_game(
             gid, blacklist=blacklist_id, patch_size=patch_size
         )
-        print(game.answer)
+        logger.debug(
+            f"游戏{type(game).__name__} gid：{game.gid} 答案：{game.answer.name}"
+        )
         # 构造题目消息
         msg = MessageSegment.text(
             f"猜猜这个图片是哪位角色头像的一部分?({one_turn_time}s后公布答案)"
@@ -111,7 +114,7 @@ async def avatar_guess(event: GuildMessageEvent):
             finish_event.clear()
             # 结束游戏
             guess_service.end_game(gid)
-            print(f"游戏{game}结束")
+            logger.success(f"游戏{type(game).__name__} gid：{game.gid}结束")
 
 
 def check_answer(event: GuildMessageEvent) -> bool:

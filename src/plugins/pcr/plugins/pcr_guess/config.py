@@ -48,6 +48,13 @@ class Config(BaseModel, extra=Extra.ignore):
         9604,
     ]
     """猜卡面黑名单"""
+    # 猜角色游戏配置
+    desc_prepare_time: int = 5
+    """准备时间"""
+    desc_one_turn_time: int = 12
+    """每轮间隔时间"""
+    desc_turn_number: int = 5  # [<9]
+    """单次游戏轮数"""
 
 
 plugin_config = Config()

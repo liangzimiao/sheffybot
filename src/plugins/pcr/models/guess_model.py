@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from io import BytesIO
-from typing import Any, Optional
+from typing import Optional
 
 from .chara_model import Chara
 
@@ -27,17 +27,17 @@ class AvatarGuessGame(GuessGame):
 class CardGuessGame(GuessGame):
     """猜卡面游戏"""
 
-    image: BytesIO = field(repr=False)
+    q_image: BytesIO = field(repr=False)
     """题目图片"""
     answer: Chara
     """答案角色"""
 
 
 @dataclass
-class CharaGuessGame(GuessGame):
+class DescGuessGame(GuessGame):
     """猜角色游戏"""
 
-    profile: Any = field(repr=False)
+    profile: dict[str, str] = field(repr=False)
     """题目档案"""
     answer: Chara
     """答案角色"""
