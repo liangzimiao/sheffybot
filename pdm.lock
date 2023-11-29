@@ -39,7 +39,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.37"
+version = "1.7.38"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -48,8 +48,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.37-py3-none-any.whl", hash = "sha256:2a680acefdb63b3995c53ab0fdf70fa82d3a410705ff3993740554b73f5ce67f"},
-    {file = "arclet_alconna-1.7.37.tar.gz", hash = "sha256:ad54c297c1c76f4fe5741303ddcf0c2a7c9ecb3a14465103f42f1da4b23e6081"},
+    {file = "arclet_alconna-1.7.38-py3-none-any.whl", hash = "sha256:e2248605bb7425c69a9cbe1e5f797d50945f30f054aaa9af73a237d8307d3432"},
+    {file = "arclet_alconna-1.7.38.tar.gz", hash = "sha256:90af6498993e7bc21223259758a021d811329b341a9add7868b9497705af050b"},
 ]
 
 [[package]]
@@ -472,7 +472,7 @@ files = [
 
 [[package]]
 name = "nonebot-adapter-qq"
-version = "1.2.0"
+version = "1.3.1"
 requires_python = ">=3.8,<4.0"
 summary = "QQ adapter for nonebot2"
 dependencies = [
@@ -482,25 +482,25 @@ dependencies = [
     "yarl<2.0.0,>=1.9.0",
 ]
 files = [
-    {file = "nonebot_adapter_qq-1.2.0-py3-none-any.whl", hash = "sha256:19f9535df19672ccc9cc2c4903cec25a882041202f27b653fe50a38055843fb0"},
-    {file = "nonebot_adapter_qq-1.2.0.tar.gz", hash = "sha256:caac94eef843a337a8ddd7e24577727aaac6e0f131b27a30514aae9633f7eac5"},
+    {file = "nonebot_adapter_qq-1.3.1-py3-none-any.whl", hash = "sha256:ad420692122295b07eb30dbf6584675a685e72b831b2cef92ab6f9e85b2ff619"},
+    {file = "nonebot_adapter_qq-1.3.1.tar.gz", hash = "sha256:2e38f608bbd6cea9ffb3fa959ca9d2bd2407af131b4a72dbf24caaf0a45e76cd"},
 ]
 
 [[package]]
 name = "nonebot-plugin-alconna"
-version = "0.33.7"
+version = "0.33.8"
 requires_python = ">=3.8"
 summary = "Alconna Adapter for Nonebot"
 dependencies = [
     "arclet-alconna-tools<0.7.0,>=0.6.7",
-    "arclet-alconna<2.0.0,>=1.7.31",
+    "arclet-alconna<2.0.0,>=1.7.38",
     "fleep>=1.0.1",
     "nepattern<0.6.0,>=0.5.14",
     "nonebot2>=2.1.0",
 ]
 files = [
-    {file = "nonebot_plugin_alconna-0.33.7-py3-none-any.whl", hash = "sha256:856ca2c2c5e9f75237e41e4708535ecdfbe19bb1928fec6d55d1425afa5d7c5a"},
-    {file = "nonebot_plugin_alconna-0.33.7.tar.gz", hash = "sha256:9e46d4cb31dd6817be8fcf8540640629c8db1364b1031382f977256d24066acb"},
+    {file = "nonebot_plugin_alconna-0.33.8-py3-none-any.whl", hash = "sha256:e33e75a4c534810756e7d743ae6a16c1996af8f6f5bc51ba8fa8ab8618ca3b55"},
+    {file = "nonebot_plugin_alconna-0.33.8.tar.gz", hash = "sha256:27ebdd8309db9d934ef703f3a0f6c8608e773cb2435cba0da29ac4936c105e19"},
 ]
 
 [[package]]
