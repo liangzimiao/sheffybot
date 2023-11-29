@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from io import BytesIO
 from typing import Any, Optional
 
@@ -9,39 +9,45 @@ from .chara_model import Chara
 class GuessGame:
     gid: int | str
     """参加游戏的小组ID"""
-    winner: Optional[int | str] = None
+    winner: Optional[int | str]
     """胜利者ID"""
-    answer: Optional[Chara] = None
-    """答案角色"""
 
 
 @dataclass
 class AvatarGuessGame(GuessGame):
     """猜头像游戏"""
 
-    image: Optional[BytesIO] = None
+    q_image: BytesIO = field(repr=False)
     """题目图片"""
+    answer: Chara
+    """答案角色"""
 
 
 @dataclass
 class CardGuessGame(GuessGame):
-    """猜卡牌游戏"""
+    """猜卡面游戏"""
 
-    image: Optional[BytesIO] = None
+    image: BytesIO = field(repr=False)
     """题目图片"""
+    answer: Chara
+    """答案角色"""
 
 
 @dataclass
 class CharaGuessGame(GuessGame):
     """猜角色游戏"""
 
-    profile: Optional[Any] = None
+    profile: Any = field(repr=False)
     """题目档案"""
+    answer: Chara
+    """答案角色"""
 
 
 @dataclass
 class VoiceGuessGame(GuessGame):
     """猜语音游戏"""
 
-    voice: Optional[BytesIO] = None
+    voice: BytesIO = field(repr=False)
     """题目语音"""
+    answer: Chara
+    """答案角色"""
