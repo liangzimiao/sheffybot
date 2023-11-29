@@ -502,17 +502,13 @@ pcr_data = PCRDataService()
 class CharaDataService:
     UNKNOWN = "1000"
     UnavailableChara = {
-        "1067",  # 穗希
+        "1000",  # 未知
         "1069",  # 霸瞳
         "1072",  # 可萝爹
         "1073",  # 拉基拉基
         "1102",  # 泳装大眼
         "1183",  # 星弓星
         "1184",  # 星弓栞
-        "1204",
-        "1205",
-        "1206",  # (小小甜心)
-        "1164",
         "1194",
         "1195",
         "1196",
@@ -521,6 +517,9 @@ class CharaDataService:
         "1201",
         "1202",
         "1203",  # (未实装)
+        "1204",  # "美美(小小甜心)"
+        "1205",  # "禊(小小甜心)"
+        "1206",  # "镜华(小小甜心)"
     }
 
     def __init__(self):
@@ -610,7 +609,7 @@ class CharaDataService:
         id_ = self.name2id(name)
         return self.from_id(id_, star, equip)
 
-    async def get_chara_card(self, id: str, star: Literal[1, 3, 6]) -> BytesIO:
+    async def get_chara_card(self, id: str, star: Literal[3, 6]) -> BytesIO:
         card_path = self.card_path / f"card_full_{id}{star}1.png"
         # 检查图片是否已经下载
         if card_path.exists():

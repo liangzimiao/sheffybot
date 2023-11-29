@@ -2,7 +2,7 @@ import random
 import sqlite3
 from io import BytesIO
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 from PIL import Image
 
@@ -79,7 +79,9 @@ class GuessService:
         """
         del self.playing[gid]
 
-    def get_game(self, gid) -> Union[AvatarGuessGame, CardGuessGame, VoiceGuessGame]:
+    def get_game(
+        self, gid
+    ) -> Optional[Union[AvatarGuessGame, CardGuessGame, VoiceGuessGame]]:
         """
         获取指定gid的游戏。
         """
@@ -99,7 +101,9 @@ class GuessService:
         """
         return self.db.record_winning(gid, uid)
 
-    async def start_avatar_game(self, gid, patch_size=32) -> AvatarGuessGame:
+    async def start_avatar_game(
+        self, gid, blacklist: list[int], patch_size=32
+    ) -> AvatarGuessGame:
         """
         开始一个AvatarGuessGame游戏。
 
@@ -113,10 +117,10 @@ class GuessService:
         # 随机选择一个角色作为答案
         ids = list(pcr_data.CHARA_NAME.keys())
         id_ = random.choice(ids)
-        while chara_data.is_npc(id_):
+        while chara_data.is_npc(id_) or int(id_) in blacklist:
             id_ = random.choice(ids)
         c = chara_data.from_id(id_)
-        c.icon = await chara_data.get_chara_icon(id_, random.choice((3, 6)))
+        c.icon = await chara_data.get_chara_icon(id_, random.choice((1, 3, 6)))
         answer = c
         # 生成题目图片
         img = Image.open(c.icon)
@@ -133,7 +137,9 @@ class GuessService:
         self.playing[gid] = game
         return game
 
-    async def start_card_game(self, gid) -> CardGuessGame:
+    async def start_card_game(
+        self, gid, blacklist: list, pic_side_length: int = 32
+    ) -> CardGuessGame:
         """
         开始一个CardGuessGame游戏。
 
@@ -143,7 +149,28 @@ class GuessService:
         返回:
             CardGuessGame: 猜卡面游戏对象。
         """
-        ...
+        # 随机选择一个角色作为答案
+        ids = list(pcr_data.CHARA_NAME.keys())
+        id_ = random.choice(ids)
+        while chara_data.is_npc(id_) or int(id_) in blacklist:
+            id_ = random.choice(ids)
+        c = chara_data.from_id(id_)
+        c.card = await chara_data.get_chara_card(id_, random.choice((3, 6)))
+        answer = c
+        # 生成题目图片
+        img = Image.open(c.card)
+        w, h = img.size
+        l = random.randint(0, w - pic_side_length)  # noqa: E741
+        u = random.randint(0, h - pic_side_length)
+        img = img.crop((l, u, l + pic_side_length, u + pic_side_length))
+        img_bytes = BytesIO()
+        img.save(img_bytes, format="PNG")
+        img_bytes.seek(0)
+        q_image = img_bytes
+        # 创建游戏
+        game = CardGuessGame(gid=gid, winner=None, answer=answer, q_image=q_image)
+        self.playing[gid] = game
+        return game
 
     async def start_voice_game(self, gid) -> VoiceGuessGame:
         """

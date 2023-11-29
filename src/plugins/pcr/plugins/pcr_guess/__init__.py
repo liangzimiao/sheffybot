@@ -1,8 +1,8 @@
 from nonebot.plugin import PluginMetadata
 
 from . import avatar_guess as avatar_guess
+from . import card_guess as card_guess
 
-# from . import card_guess as card_guess
 # from . import desc_guess as desc_guess
 # from . import voice_guess as voice_guess
 from .config import Config
