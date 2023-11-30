@@ -2,12 +2,12 @@ import random
 import sqlite3
 from io import BytesIO
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional
 
 from PIL import Image
 
-from ..models import AvatarGuessGame, CardGuessGame, DescGuessGame, VoiceGuessGame
-from .internal.data_service import chara_data, pcr_data
+from ..models import AvatarGuessGame, CardGuessGame, DescGuessGame, GuessGame
+from .data_service import chara_data, pcr_data
 
 
 class Dao:
@@ -79,9 +79,7 @@ class GuessService:
         """
         del self.playing[gid]
 
-    def get_game(
-        self, gid
-    ) -> Optional[Union[AvatarGuessGame, CardGuessGame, VoiceGuessGame]]:
+    def get_game(self, gid) -> Optional[GuessGame]:
         """
         获取指定gid的游戏。
         """
@@ -119,7 +117,7 @@ class GuessService:
         id_ = random.choice(ids)
         while chara_data.is_npc(id_) or int(id_) in blacklist:
             id_ = random.choice(ids)
-        c = chara_data.from_id(id_)
+        c = chara_data.get_chara_from_id(id_)
         c.icon = await chara_data.get_chara_icon(id_, random.choice((1, 3, 6)))
         answer = c
         # 生成题目图片
@@ -154,7 +152,7 @@ class GuessService:
         id_ = random.choice(ids)
         while chara_data.is_npc(id_) or int(id_) in blacklist:
             id_ = random.choice(ids)
-        c = chara_data.from_id(id_)
+        c = chara_data.get_chara_from_id(id_)
         c.card = await chara_data.get_chara_card(id_, random.choice((3, 6)))
         answer = c
         # 生成题目图片
@@ -184,18 +182,17 @@ class GuessService:
         """
         # 随机选择一个角色作为答案
         id_ = random.choice(list(pcr_data.CHARA_PROFILE.keys()))
-        c = chara_data.from_id(id_)
+        c = chara_data.get_chara_from_id(id_)
         c.icon = await chara_data.get_chara_icon(id_)
         # 生成题目档案
         profile = pcr_data.CHARA_PROFILE[id_].copy()
         profile.pop("名字", None)
-        print(profile)
         # 创建游戏
         game = DescGuessGame(gid=gid, winner=None, answer=c, profile=profile)
         self.playing[gid] = game
         return game
 
-    async def start_voice_game(self, gid) -> VoiceGuessGame:
+    async def start_voice_game(self, gid) -> Any:
         """
         开始一个VoiceGuessGame游戏。
 
@@ -205,12 +202,13 @@ class GuessService:
         返回:
             VoiceGuessGame: 猜语音游戏对象。
         """
+        # 随机选择一个角色作为答案
         ...
 
     @staticmethod
     def check_answer(
         user_answer: str,
-        game: Union[AvatarGuessGame, CardGuessGame, DescGuessGame, VoiceGuessGame],
+        game: GuessGame,
     ) -> bool:
         """
         判断给定的答案是否正确，根据角色数据进行判断。
@@ -223,7 +221,7 @@ class GuessService:
             bool: 如果答案正确则返回 True，否则返回 False。
         """
         # 获取用户答案的角色
-        user_chara = chara_data.from_name(chara_data.match(user_answer)[0])
+        user_chara = chara_data.get_chara_from_name(chara_data.match(user_answer)[0])
         return user_chara == game.answer
 
     @property

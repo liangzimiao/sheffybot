@@ -7,10 +7,14 @@ from .chara_model import Chara
 
 @dataclass
 class GuessGame:
+    """GUESS游戏"""
+
     gid: int | str
     """参加游戏的小组ID"""
     winner: Optional[int | str]
     """胜利者ID"""
+    answer: Chara
+    """答案角色"""
 
 
 @dataclass
@@ -19,8 +23,6 @@ class AvatarGuessGame(GuessGame):
 
     q_image: BytesIO = field(repr=False)
     """题目图片"""
-    answer: Chara
-    """答案角色"""
 
 
 @dataclass
@@ -29,8 +31,6 @@ class CardGuessGame(GuessGame):
 
     q_image: BytesIO = field(repr=False)
     """题目图片"""
-    answer: Chara
-    """答案角色"""
 
 
 @dataclass
@@ -39,15 +39,3 @@ class DescGuessGame(GuessGame):
 
     profile: dict[str, str] = field(repr=False)
     """题目档案"""
-    answer: Chara
-    """答案角色"""
-
-
-@dataclass
-class VoiceGuessGame(GuessGame):
-    """猜语音游戏"""
-
-    voice: BytesIO = field(repr=False)
-    """题目语音"""
-    answer: Chara
-    """答案角色"""
