@@ -6,7 +6,7 @@ from loguru import logger
 
 from ..config import pcr_config
 from ..models import UpdateResult
-from .internal.data_service import pcr_data
+from .data_service import pcr_data
 
 pcr_res_path: Path = pcr_config.pcr_resources_path
 pcr_data_path: Path = pcr_config.pcr_data_path
