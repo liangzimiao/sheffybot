@@ -12,6 +12,7 @@ dependencies = [
     "nonebot-plugin-alconna>=0.33.6",
     "nonebot-plugin-apscheduler<1.0.0,>=0.3.0",
     "arclet-alconna>=1.7.37",
+    "nonebot-adapter-onebot>=2.3.1",
 ]
 
 
@@ -27,7 +28,7 @@ PCR = [
 
 
 [tool.nonebot]
-adapters = [{ name = "QQ", module_name = "nonebot.adapters.qq" }]
+adapters = [{ name = "QQ", module_name = "nonebot.adapters.qq" }, {name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11"}]
 plugins = ["nonebot_plugin_alconna", "nonebot_plugin_apscheduler"]
 plugin_dirs = ["src/plugins"]
 builtin_plugins = ["echo"]
