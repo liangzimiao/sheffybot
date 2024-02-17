@@ -7,33 +7,37 @@
 import asyncio
 from datetime import timedelta
 
-from loguru import logger
-from nonebot.adapters.qq import GuildMessageEvent, MessageSegment
+from nonebot import on_command
+from nonebot.adapters import Event
 from nonebot.plugin import on_fullmatch, on_message
+from nonebot_plugin_saa import Image, Mention, Text
+from nonebot_plugin_session import EventSession
 
-from ...services import GuessService
-from .config import plugin_config
+from ...config import pcr_config
+from ...services.guess_service import GuessService, logger
 
-patch_size = plugin_config.avatar_patch_size
-one_turn_time = plugin_config.avatar_one_turn_time
-blacklist_id = plugin_config.avatar_blacklist_id
+blacklist_id = []
+patch_size = pcr_config.pcr_avatar_patch_size
+one_turn_time = pcr_config.pcr_avatar_one_turn_time
 
-db_path = plugin_config.plugin_data_path / "pcr_avatar_guess.db"
-guess_service = GuessService(db_path)
+avatar_db_path = pcr_config.pcr_data_path / "guess_games_data" / "pcr_avatar_guess.db"
+guess_service = GuessService(avatar_db_path)
 
 
-matcher = on_fullmatch(tuple(["猜头像排行", "猜头像排名", "猜头像排行榜"]), priority=5)
+matcher = on_command("猜头像排名", aliases={"猜头像排行榜", "猜头像群排行"}, priority=5)
 
 
 @matcher.handle()
-async def display_ranking(event: GuildMessageEvent):
-    gid = event.get_session_id()
-    gid = event.guild_id
+async def display_ranking(session: EventSession):
+    gid = session.id3 if session.id3 else (session.id2 if session.id2 else session.id1)
+    assert gid
+    platform = session.platform
+    gid = f"{platform}_{gid}"
     print(gid)
     ranking = guess_service.get_ranking(gid)
-    print(ranking)
+    print(ranking)  # uid, count
     msg = "【猜头像小游戏排行榜】"
-    pass
+    # TODO uid转换nickname
     await matcher.send(msg)
 
 
@@ -41,8 +45,11 @@ matcher = on_fullmatch(tuple(["猜头像", "/猜头像"]), priority=5)
 
 
 @matcher.handle()
-async def avatar_guess(event: GuildMessageEvent):
-    gid = event.guild_id
+async def avatar_guess(session: EventSession):
+    gid = session.id3 if session.id3 else (session.id2 if session.id2 else session.id1)
+    assert gid
+    platform = session.platform
+    gid = f"{platform}_{gid}"
     # 如果游戏正在进行，则返回提示信息
     if guess_service.is_playing(gid):
         await matcher.finish("游戏仍在进行中…")
@@ -55,23 +62,34 @@ async def avatar_guess(event: GuildMessageEvent):
             f"游戏{type(game).__name__} gid：{game.gid} 答案：{game.answer.name}"
         )
         # 构造题目消息
-        msg = MessageSegment.text(
+        msg = Text(
             f"猜猜这个图片是哪位角色头像的一部分?({one_turn_time}s后公布答案)"
-        ) + MessageSegment.file_image(game.q_image)
+        ) + Image(game.question)
         # 发送题目
-        await matcher.send(msg)
+        await msg.send()
         # 创建事件对象
         finish_event = asyncio.Event()
+
+        def check_answer(event: Event) -> bool:
+            """
+            检查给定答案是否与游戏的答案匹配。
+            """
+            # 获取用户答案
+            user_answer = event.get_plaintext().strip()
+            if not game:
+                return False
+            return guess_service.check_answer(user_answer, game)
+
         # 创建临时事件响应器
         checker = on_message(
             rule=check_answer,
-            priority=5,
+            priority=6,
             expire_time=timedelta(seconds=one_turn_time),
             temp=True,
         )
 
         @checker.handle()
-        async def _(event: GuildMessageEvent):
+        async def _(event: Event):
             # 获取答对者id
             game.winner = event.get_user_id()
             # 获取答对次数
@@ -80,15 +98,11 @@ async def avatar_guess(event: GuildMessageEvent):
             txt = f"\n猜对了，真厉害！TA已经猜对{n}次了~\n正确答案是{game.answer.name}"
             img = game.answer.icon
             assert img is not None
-            msg = (
-                MessageSegment.mention_user(event.get_user_id())
-                + MessageSegment.text(txt)
-                + MessageSegment.file_image(img)
-            )
+            msg = Mention(event.get_user_id()) + Text(txt) + Image(img)
             # 设置事件标识为True
             finish_event.set()
             # 发送答对
-            await checker.send(msg)
+            await msg.send()
 
         # 等待15秒或者收到指令
         try:
@@ -102,37 +116,12 @@ async def avatar_guess(event: GuildMessageEvent):
             txt2 = "\n很遗憾，没有人答对~"
             img = game.answer.icon
             assert img is not None
-            msg = (
-                MessageSegment.text(txt)
-                + MessageSegment.file_image(img)
-                + MessageSegment.text(txt2)
-            )
+            msg = Text(txt) + Image(img) + Text(txt2)
             # 发送答案
-            await matcher.send(msg)
+            await msg.send()
         finally:
             # 清除事件
             finish_event.clear()
             # 结束游戏
             guess_service.end_game(gid)
-            logger.success(f"游戏{type(game).__name__} gid：{game.gid}结束")
-
-
-def check_answer(event: GuildMessageEvent) -> bool:
-    """
-    检查给定答案是否与游戏的答案匹配。
-
-    参数:
-        event (GuildMessageEvent): 包含消息的事件。
-
-    返回值:
-        bool: 如果答案与游戏的答案匹配，则为True；否则为False。
-    """
-    gid = event.guild_id
-    # 获取用户答案
-    user_answer = event.get_message().extract_plain_text().strip()
-    # 获取小组所在游戏
-    game = guess_service.get_game(gid)
-
-    if not game:
-        return False
-    return guess_service.check_answer(user_answer, game)
+            logger.debug(f"游戏{type(game).__name__} gid：{game.gid}结束")

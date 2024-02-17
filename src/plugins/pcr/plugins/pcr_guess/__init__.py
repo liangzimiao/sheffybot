@@ -5,15 +5,28 @@ from . import card_guess as card_guess
 from . import desc_guess as desc_guess
 
 # from . import voice_guess as voice_guess
-from .config import Config
+
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_guess",
     description="""
-    [抽签|人品|运势]
-    随机角色预测今日运势
-    准确率高达114.514%！
+    pcr相关的猜角色游戏
     """,
     usage="[猜头像|猜卡面|猜角色|猜语音]",
-    config=Config,
+    config=None,
 )
+
+
+# from nonebot import MatcherGroup
+# from nonebot.adapters import Event
+
+# def for_pcr(event: Event) -> bool:
+#    message = event.get_plaintext()
+#    if "pcr" or "PCR" in message:
+#        return True
+#    return False
+
+# group = MatcherGroup(rule=for_pcr)
+
+# matcher1 = group.on_message()
+# matcher2 = group.on_message()
