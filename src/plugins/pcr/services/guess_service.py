@@ -6,8 +6,11 @@ from typing import Any, Optional
 
 from PIL import Image
 
-from ..models import AvatarGuessGame, CardGuessGame, DescGuessGame, GuessGame
+from ..logger import PCRLogger as Logger
+from ..models import GuessGame
 from .data_service import chara_data, pcr_data
+
+logger = Logger("PCR_GUESS")
 
 
 class Dao:
@@ -24,10 +27,10 @@ class Dao:
         with self.connect() as conn:
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS win_record "
-                "(gid INT NOT NULL, uid INT NOT NULL, count INT NOT NULL, PRIMARY KEY(gid, uid))"
+                "(gid TEXT NOT NULL, uid TEXT NOT NULL, count INT NOT NULL, PRIMARY KEY(gid, uid))"
             )
 
-    def get_win_count(self, gid, uid) -> int:
+    def get_win_count(self, gid: str, uid: str) -> int:
         """
         获取胜利次数。
         """
@@ -37,7 +40,7 @@ class Dao:
             ).fetchone()
             return r[0] if r else 0
 
-    def record_winning(self, gid, uid) -> int:
+    def record_winning(self, gid: str, uid: str) -> int:
         """
         记录胜利。
         """
@@ -50,7 +53,7 @@ class Dao:
             )
         return n
 
-    def get_ranking(self, gid) -> list[tuple[int, int]]:
+    def get_ranking(self, gid: str) -> list[tuple[str, int]]:
         """
         获取排行榜。
         """
@@ -67,31 +70,31 @@ class GuessService:
         self.db_path = db_path
         self.playing = {}
 
-    def is_playing(self, gid):
+    def is_playing(self, gid: str) -> bool:
         """
         判断指定gid的游戏是否正在进行。
         """
         return gid in self.playing
 
-    def end_game(self, gid):
+    def end_game(self, gid: str) -> None:
         """
         结束指定gid的游戏。
         """
         del self.playing[gid]
 
-    def get_game(self, gid) -> Optional[GuessGame]:
+    def get_game(self, gid: str) -> Optional[GuessGame]:
         """
         获取指定gid的游戏。
         """
         return self.playing[gid] if gid in self.playing else None
 
-    def get_ranking(self, gid) -> list[tuple[int, int]]:
+    def get_ranking(self, gid: str) -> list[tuple[str, int]]:
         """
         获取给定gid的游戏排名。
         """
         return self.db.get_ranking(gid)
 
-    def record(self, gid, uid) -> int:
+    def record(self, gid: str, uid: str) -> int:
         """
         记录当前游戏下用户的胜利，并返回胜利次数。
         gid: 游戏的ID。
@@ -100,8 +103,8 @@ class GuessService:
         return self.db.record_winning(gid, uid)
 
     async def start_avatar_game(
-        self, gid, blacklist: list[int], patch_size=32
-    ) -> AvatarGuessGame:
+        self, gid: str, blacklist: list[str], patch_size=32
+    ) -> GuessGame:
         """
         开始一个AvatarGuessGame游戏。
 
@@ -115,7 +118,7 @@ class GuessService:
         # 随机选择一个角色作为答案
         ids = list(pcr_data.CHARA_NAME.keys())
         id_ = random.choice(ids)
-        while chara_data.is_npc(id_) or int(id_) in blacklist:
+        while chara_data.is_npc(id_) or id_ in blacklist:
             id_ = random.choice(ids)
         c = chara_data.get_chara_from_id(id_)
         c.icon = await chara_data.get_chara_icon(id_, random.choice((1, 3, 6)))
@@ -129,15 +132,15 @@ class GuessService:
         img_bytes = BytesIO()
         img.save(img_bytes, format="PNG")
         img_bytes.seek(0)
-        q_image = img_bytes
+        question = img_bytes
         # 创建游戏
-        game = AvatarGuessGame(gid=gid, winner=None, answer=answer, q_image=q_image)
+        game = GuessGame(gid=gid, winner=None, answer=answer, question=question)
         self.playing[gid] = game
         return game
 
     async def start_card_game(
-        self, gid, blacklist: list, pic_side_length: int = 32
-    ) -> CardGuessGame:
+        self, gid: str, blacklist: list, pic_side_length: int = 32
+    ) -> GuessGame:
         """
         开始一个CardGuessGame游戏。
 
@@ -150,7 +153,7 @@ class GuessService:
         # 随机选择一个角色作为答案
         ids = list(pcr_data.CHARA_NAME.keys())
         id_ = random.choice(ids)
-        while chara_data.is_npc(id_) or int(id_) in blacklist:
+        while chara_data.is_npc(id_) or id_ in blacklist:
             id_ = random.choice(ids)
         c = chara_data.get_chara_from_id(id_)
         c.card = await chara_data.get_chara_card(id_, random.choice((3, 6)))
@@ -166,11 +169,11 @@ class GuessService:
         img_bytes.seek(0)
         q_image = img_bytes
         # 创建游戏
-        game = CardGuessGame(gid=gid, winner=None, answer=answer, q_image=q_image)
+        game = GuessGame(gid=gid, winner=None, answer=answer, question=q_image)
         self.playing[gid] = game
         return game
 
-    async def start_desc_game(self, gid) -> DescGuessGame:
+    async def start_desc_game(self, gid: str) -> GuessGame:
         """
         开始一个DescGuessGame游戏。
 
@@ -188,7 +191,7 @@ class GuessService:
         profile = pcr_data.CHARA_PROFILE[id_].copy()
         profile.pop("名字", None)
         # 创建游戏
-        game = DescGuessGame(gid=gid, winner=None, answer=c, profile=profile)
+        game = GuessGame(gid=gid, winner=None, answer=c, question=profile)
         self.playing[gid] = game
         return game
 
@@ -225,7 +228,7 @@ class GuessService:
         return user_chara == game.answer
 
     @property
-    def db(self):
+    def db(self) -> Dao:
         """
         数据库对象。
         """

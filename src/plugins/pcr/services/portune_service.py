@@ -27,19 +27,19 @@ class PortuneService:
 
     @property
     def luck_type(self) -> list:
-        if PortuneService.luck_type_cache is None:
-            print("PortuneService.luck_type无缓存")
+        if self.luck_type_cache is None:
+            # print("PortuneService.luck_type无缓存")
             with open(self.res_path / "luck_type.json", "r", encoding="utf-8") as file:
-                PortuneService.luck_type_cache = json.load(file)
-        return PortuneService.luck_type_cache
+                self.luck_type_cache = json.load(file)
+        return self.luck_type_cache
 
     @property
     def luck_desc(self) -> list:
-        if PortuneService.luck_desc_cache is None:
-            print("PortuneService.luck_desc无缓存")
+        if self.luck_desc_cache is None:
+            # print("PortuneService.luck_desc无缓存")
             with open(self.res_path / "luck_desc.json", "r", encoding="utf-8") as file:
-                PortuneService.luck_desc_cache = json.load(file)
-        return PortuneService.luck_desc_cache
+                self.luck_desc_cache = json.load(file)
+        return self.luck_desc_cache
 
     def drawing_pic(self) -> BytesIO:
         """
@@ -163,6 +163,9 @@ class PortuneService:
         for s in str:
             list.append(s)
         return "\n".join(list)
+
+
+portune_service = PortuneService()
 
 
 class DailyNumberLimiter:
