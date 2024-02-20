@@ -5,7 +5,7 @@ import difflib
 import json
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal, Optional, overload
+from typing import Any, Literal, Optional
 
 import httpx
 from fuzzywuzzy import fuzz
@@ -58,6 +58,7 @@ class PCRDataService:
     def __init__(self) -> None:
         pcr_res_path.mkdir(parents=True, exist_ok=True)
         pcr_data_path.mkdir(parents=True, exist_ok=True)
+        self.load_pcr_res()
 
     def __repr__(self) -> str:
         return f"CHARA_NAME:{len(self.CHARA_NAME)}, PROFILE:{len(self.CHARA_PROFILE)}, ROSTER:{len(self.CHARA_ROSTER)}, POOL_VER:{self.LOCAL_POOL_VER.get('ver')}"
@@ -246,6 +247,25 @@ class PCRDataService:
         Logger("CHARA_ROSTER").info(f"{result}")
         return data
 
+    def load_pcr_res(self):
+        """
+        加载PCR资源
+        """
+        try:
+            self.gadget_equip = Image.open(f"{pcr_res_path}/priconne/gadget/equip.png")
+            self.gadget_star = Image.open(f"{pcr_res_path}/priconne/gadget/star.png")
+            self.like = Image.open(f"{pcr_res_path}/priconne/gadget/like.png")
+            self.dislike = Image.open(f"{pcr_res_path}/priconne/gadget/dislike.png")
+            self.gadget_star_dis = Image.open(
+                f"{pcr_res_path}/priconne/gadget/star_disabled.png"
+            )
+            self.gadget_star_pink = Image.open(
+                f"{pcr_res_path}/priconne/gadget/star_pink.png"
+            )
+            self.unknown_path = f"{pcr_res_path}/priconne/unknown.png"
+        except Exception as e:
+            Logger("PCR_RES").error(f"加载PCR资源时发生错误:{e}")
+
     def ids2names(self, ids: list[int]) -> list:
         """
         根据ID转换为官方译名,为了与现行卡池兼容
@@ -280,7 +300,7 @@ class CharaDataService:
         self,
         id: Optional[str] = None,
         name: Optional[str] = None,
-        star: Literal[1, 3, 6] = 3,
+        star: int = 3,
         equip: int = 0,
         need_icon: bool = False,
         need_card: bool = False,
@@ -291,7 +311,7 @@ class CharaDataService:
         Args:
             id (str, optional): 角色的ID。
             name (str, optional): 角色的名称。
-            star (int, optional): 角色的星级。默认为3。
+            star (int, optional): 角色的星级。
             equip (int, optional): 角色的装备等级。默认为0。
             need_icon (bool, optional): 是否需要角色图标。默认为False。
             need_card (bool, optional): 是否需要角色卡面。默认为False。
@@ -314,9 +334,7 @@ class CharaDataService:
         )
         return c
 
-    async def get_chara_icon(
-        self, id: str, star: Optional[Literal[1, 3, 6]] = None
-    ) -> BytesIO:
+    async def get_chara_icon(self, id: str, star: Optional[int] = None) -> BytesIO:
         if star is None:
             # 先从本地缓存中获取
             icon_path = self.icon_path / f"icon_unit_{id}61.png"
@@ -338,11 +356,12 @@ class CharaDataService:
                 icon_path = self.icon_path / f"icon_unit_{id}11.png"
             if not icon_path.exists():
                 # 下载失败，使用缺省图标
-                icon_path = self.icon_path / f"icon_unit_{self.UNKNOWN}.png"
+                icon_path = pcr_data.unknown_path
             with open(icon_path, "rb") as f:
                 # 返回图标数据
                 return BytesIO(f.read())
         else:
+            star = 3 if star not in (1, 3, 6) else star
             # 从指定的星级获取图标
             icon_path = self.icon_path / f"icon_unit_{id}{star}1.png"
             if icon_path.exists():
@@ -355,7 +374,11 @@ class CharaDataService:
                     return await self.get_chara_icon(id=id)
             return await self.get_chara_icon(id=id, star=star)
 
-    async def get_chara_card(self, id: str, star: Literal[3, 6]) -> BytesIO:
+    async def get_chara_card(self, id: str, star: Optional[int] = None) -> BytesIO:
+        """
+        根据指定的ID和星级获取角色卡面。
+        """
+        star = 3 if star not in (3, 6) else star
         card_path = self.card_path / f"card_full_{id}{star}1.png"
         # 检查图片是否已经下载
         if card_path.exists():
@@ -366,6 +389,7 @@ class CharaDataService:
             # 如果没有下载,则先下载再返回
             await self.download_chara_img(id=id, star=star, type_="card")
             if not card_path.exists():
+                # TODO: 这里应该返回一个默认卡面
                 return await self.get_chara_card(id=id, star=3)
             # 重新打开图片并返回BytesIO
             return await self.get_chara_card(id=id, star=star)
@@ -415,7 +439,7 @@ class CharaDataService:
             )
 
     @staticmethod
-    async def download_chara_voice(id: str, star):
+    async def download_chara_voice(id: str, star: int):
         """
         下载角色声音 # 失效中
         """
