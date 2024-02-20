@@ -66,7 +66,7 @@ async def card_guess(session: EventSession):
         # 创建事件对象
         finish_event = asyncio.Event()
 
-        def check_answer(event: Event) -> bool:
+        async def check_answer(event: Event) -> bool:
             """
             检查给定答案是否与游戏的答案匹配。
             """
@@ -74,7 +74,7 @@ async def card_guess(session: EventSession):
             user_answer = event.get_plaintext().strip()
             if not game:
                 return False
-            return guess_service.check_answer(user_answer, game)
+            return await guess_service.check_answer(user_answer, game)
 
         # 创建临时事件响应器
         checker = on_message(

@@ -120,8 +120,9 @@ class GuessService:
         id_ = random.choice(ids)
         while chara_data.is_npc(id_) or id_ in blacklist:
             id_ = random.choice(ids)
-        c = chara_data.get_chara_from_id(id_)
-        c.icon = await chara_data.get_chara_icon(id_, random.choice((1, 3, 6)))
+        c = await chara_data.get_chara(
+            id=id_, star=random.choice((1, 3, 6)), need_icon=True
+        )
         answer = c
         # 生成题目图片
         img = Image.open(c.icon)
@@ -155,8 +156,9 @@ class GuessService:
         id_ = random.choice(ids)
         while chara_data.is_npc(id_) or id_ in blacklist:
             id_ = random.choice(ids)
-        c = chara_data.get_chara_from_id(id_)
-        c.card = await chara_data.get_chara_card(id_, random.choice((3, 6)))
+        c = await chara_data.get_chara(
+            id=id_, star=random.choice((3, 6)), need_card=True
+        )
         answer = c
         # 生成题目图片
         img = Image.open(c.card)
@@ -185,7 +187,7 @@ class GuessService:
         """
         # 随机选择一个角色作为答案
         id_ = random.choice(list(pcr_data.CHARA_PROFILE.keys()))
-        c = chara_data.get_chara_from_id(id_)
+        c = await chara_data.get_chara(id=id_, need_icon=True)
         c.icon = await chara_data.get_chara_icon(id_)
         # 生成题目档案
         profile = pcr_data.CHARA_PROFILE[id_].copy()
@@ -209,7 +211,7 @@ class GuessService:
         ...
 
     @staticmethod
-    def check_answer(
+    async def check_answer(
         user_answer: str,
         game: GuessGame,
     ) -> bool:
@@ -224,7 +226,7 @@ class GuessService:
             bool: 如果答案正确则返回 True，否则返回 False。
         """
         # 获取用户答案的角色
-        user_chara = chara_data.get_chara_from_name(chara_data.match(user_answer)[0])
+        user_chara = await chara_data.get_chara(name=chara_data.match(user_answer)[0])
         return user_chara == game.answer
 
     @property

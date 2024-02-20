@@ -276,71 +276,43 @@ class CharaDataService:
         self.icon_path.mkdir(parents=True, exist_ok=True)
         self.voice_path.mkdir(parents=True, exist_ok=True)
 
-    def get_chara_from_id(
+    async def get_chara(
         self,
-        id_: str,
+        id: Optional[str] = None,
+        name: Optional[str] = None,
         star: Literal[1, 3, 6] = 3,
         equip: int = 0,
+        need_icon: bool = False,
+        need_card: bool = False,
     ) -> Chara:
         """
-        根据提供的ID、星级和装备等级创建一个新的Chara实例。
+        根据提供的ID或名称、星级和装备等级创建一个新的Chara实例。
 
-        参数:
-            id_ (str): 角色的ID。
-            star (int, 可选): 角色的星级。默认为3。
-            equip (int, 可选): 角色的装备等级。默认为0。
-        返回值:
+        Args:
+            id (str, optional): 角色的ID。
+            name (str, optional): 角色的名称。
+            star (int, optional): 角色的星级。默认为3。
+            equip (int, optional): 角色的装备等级。默认为0。
+            need_icon (bool, optional): 是否需要角色图标。默认为False。
+            need_card (bool, optional): 是否需要角色卡面。默认为False。
+
+        Returns:
             Chara: 具有指定ID、星级和装备等级的Chara类的新实例。
         """
-        c = Chara(id_, star, equip, name=pcr_data.CHARA_NAME[id_][0])
+        if (id is None) and (name is None):
+            raise ValueError("需要提供角色ID或角色名称")
+        if id:
+            c = Chara(id, star, equip, name=pcr_data.CHARA_NAME[id][0])
+        elif name:
+            id = self.name2id(name)
+            c = Chara(id, star, equip, name=pcr_data.CHARA_NAME[id][0])
+        c.icon = await self.get_chara_icon(c.id, c.star) if need_icon else None
+        c.card = (
+            await self.get_chara_card(c.id, c.star)
+            if need_card and c.star in (3, 6)
+            else None
+        )
         return c
-
-    def get_chara_from_name(
-        self,
-        name,
-        star: Literal[1, 3, 6] = 3,
-        equip: int = 0,
-    ) -> Chara:
-        """
-        根据角色名称、星级和装备等级创建一个新的角色实例。
-
-        参数:
-            name (str): 角色的名称。
-            star (int): 角色的星级。默认为3。
-            equip (int): 角色的装备等级。默认为0。
-
-        返回值:
-            Chara: 具有指定名称、星级和装备等级的角色实例。
-        """
-        id_ = self.name2id(name)
-        return self.get_chara_from_id(id_, star, equip)
-
-    @overload
-    async def get_chara_icon(self, id: str) -> BytesIO:
-        """
-        获取给定ID的角色图标。
-
-        参数:
-            id (str): 角色的ID。
-
-        返回:
-            BytesIO: 角色图标作为BytesIO对象。
-        """
-        ...
-
-    @overload
-    async def get_chara_icon(self, id: str, star: Literal[1, 3, 6]) -> BytesIO:
-        """
-        获取指定ID和星级的角色图标。
-
-        参数:
-            id (str): 角色的ID。
-            star (int): 角色的星级。
-
-        返回:
-            BytesIO: 角色图标的字节流对象。
-        """
-        ...
 
     async def get_chara_icon(
         self, id: str, star: Optional[Literal[1, 3, 6]] = None
