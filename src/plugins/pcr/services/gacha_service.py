@@ -61,6 +61,7 @@ class Dao:
 class Gacha:
     def __init__(self, pool_name: str = "BL"):
         pool = pcr.LOCAL_POOL[pool_name]
+        self.pool_name = pool_name
         self.up_prob = pool["up_prob"]
         self.s3_prob = pool["s3_prob"]
         self.s2_prob = pool["s2_prob"]

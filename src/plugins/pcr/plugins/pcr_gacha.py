@@ -2,7 +2,7 @@ from nonebot.plugin import PluginMetadata, on_command
 from nonebot_plugin_saa import Image, Mention, Text
 from nonebot_plugin_session import EventSession
 
-from ..services.gacha_service import Gacha, GachaService, logger
+from ..services.gacha_service import Gacha, GachaService, chara_data, logger
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_gacha",
@@ -168,21 +168,39 @@ async def _(session: EventSession):
     await msg2.send()
 
 
-matcher = on_command("查看卡池", priority=5)
+matcher = on_command(
+    "查看卡池",
+    aliases={
+        "查看卡池",
+        "康康卡池",
+        "卡池資訊",
+        "看看up",
+        "看看UP",
+        "卡池资讯",
+    },
+    priority=5,
+)
 
 
 @matcher.handle()
 async def _(session: EventSession):
     # 获取群组id
     gid = session.id2
+    if gid is None:
+        return
     # 获取群组对应卡池
-    pass
-    # 查看卡池
-    pass
-    # 构造消息
-    pass
+    gacha = await gacha_service.get_gacha(gid=gid)
+    # 查看卡池 and 构造消息
+    msg = Text(f"本期{gacha.pool_name}卡池主打的角色：\n")
+    for up in gacha.up:
+        up_chara = await chara_data.get_chara(name=up, star=3, need_icon=True)
+        assert up_chara.icon
+        msg += Text(f"{up_chara.name}") + Image(up_chara.icon)
+    msg += Text(
+        f"\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%"
+    )
     # 发送消息
-    pass
+    await msg.send()
 
 
 matcher = on_command("切换卡池", priority=5)
