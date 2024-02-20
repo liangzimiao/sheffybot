@@ -27,7 +27,7 @@ class WhoIsService:
             id = chara_data.name2id(guess_name)
             is_guess = True
 
-        c = chara_data.get_chara_from_id(id)
+        c = await chara_data.get_chara(id=id)
         c.icon = (
             await chara_data.get_chara_icon(id) if id != chara_data.UNKNOWN else None
         )
