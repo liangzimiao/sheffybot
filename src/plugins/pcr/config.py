@@ -11,7 +11,7 @@ class Config(BaseModel, extra=Extra.ignore):
     pcr_data_path: Path = Path(__file__).resolve().parent / "data"
     pcr_resources_path: Path = Path(__file__).resolve().parent / "resources"
     # PCR 运势配置
-    pcr_portune_limit: int = 5
+    pcr_portune_limit: int = 1
     """每日限制次数"""
     pcr_portune_is_reply: bool = True
     """是否启用回复"""

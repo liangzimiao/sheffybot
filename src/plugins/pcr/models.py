@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from io import BytesIO
-from typing import Any, Literal, Optional
+from typing import Any, Optional, TypedDict
 
 
 @dataclass
@@ -9,7 +9,7 @@ class Chara:
 
     id: str
     """角色id"""
-    star: Literal[1, 3, 6]
+    star: int
     """角色星级"""
     equip: int
     """角色装备"""
@@ -52,3 +52,20 @@ class WhoIsGuessResult:
     """匹配到的角色"""
     score: int
     """匹配度"""
+
+
+class GachaTenjouResult(TypedDict):
+    """PCR一井抽卡结果"""
+
+    s3: list[Chara]
+    """3星角色"""
+    s2: list[Chara]
+    """2星角色"""
+    s1: list[Chara]
+    """1星角色"""
+    first_up_pos: int
+    """第一次UP的位置"""
+    up_num: int
+    """UP次数"""
+    hiishi: int
+    """秘石数"""
