@@ -49,9 +49,7 @@ async def desc_guess(session: EventSession):
     else:
         # 否则，开始一个新的游戏
         game = await guess_service.start_desc_game(gid)
-        logger.debug(
-            f"游戏{type(game).__name__} gid：{game.gid} 答案：{game.answer.name}"
-        )
+        logger.debug(f"PCR猜角色游戏 gid：{game.gid} 答案：{game.answer.name}")
         # 构造准备消息
         kws = list(game.question.keys())
         random.shuffle(kws)
@@ -113,15 +111,15 @@ async def desc_guess(session: EventSession):
                 finish_event.clear()
                 # 结束游戏
                 guess_service.end_game(gid)
-                logger.debug(f"游戏{type(game).__name__} gid：{game.gid}结束")
+                logger.debug(f"PCR猜角色游戏 gid：{game.gid} 结束")
             except asyncio.TimeoutError:
                 # 如果超时，说明没有人答对
-                logger.info(f"游戏{type(game).__name__} gid：{game.gid}第{i + 1}轮结束")
+                logger.info(f"PCR猜角色游戏 gid：{game.gid} 第{i + 1}轮结束")
         # 清除事件
         finish_event.clear()
         # 结束游戏
         guess_service.end_game(gid)
-        logger.debug(f"游戏{type(game).__name__} gid：{game.gid}结束")
+        logger.debug(f"PCR猜角色游戏 gid：{game.gid} 结束")
         if game.winner:
             return
         # 构造最终消息
@@ -131,9 +129,3 @@ async def desc_guess(session: EventSession):
         msg = Text(txt) + Image(img)
         # 发送最终消息
         await msg.send()
-
-
-def my_generator(first_num: int, second_num: int):
-    yield first_num
-    while True:
-        yield second_num

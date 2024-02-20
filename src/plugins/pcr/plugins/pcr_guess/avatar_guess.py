@@ -57,9 +57,7 @@ async def avatar_guess(session: EventSession):
         game = await guess_service.start_avatar_game(
             gid, blacklist=blacklist_id, patch_size=patch_size
         )
-        logger.debug(
-            f"游戏{type(game).__name__} gid：{game.gid} 答案：{game.answer.name}"
-        )
+        logger.debug(f"PCR猜头像游戏 gid：{game.gid} 答案：{game.answer.name}")
         # 构造题目消息
         msg = Text(
             f"猜猜这个图片是哪位角色头像的一部分?({one_turn_time}s后公布答案)"
@@ -123,4 +121,4 @@ async def avatar_guess(session: EventSession):
             finish_event.clear()
             # 结束游戏
             guess_service.end_game(gid)
-            logger.debug(f"游戏{type(game).__name__} gid：{game.gid}结束")
+            logger.debug(f"PCR猜头像游戏 gid：{game.gid} 结束")

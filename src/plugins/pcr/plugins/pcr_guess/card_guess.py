@@ -54,9 +54,7 @@ async def card_guess(session: EventSession):
     else:
         # 否则，开始一个新的游戏
         game = await guess_service.start_card_game(gid, blacklist_id, pic_side_length)
-        logger.debug(
-            f"游戏{type(game).__name__} gid：{game.gid} 答案：{game.answer.name}"
-        )
+        logger.debug(f"PCR猜卡面游戏 gid：{game.gid} 答案：{game.answer.name}")
         # 构造题目消息
         msg = Text(
             f"猜猜这个图片是哪位角色卡面的一部分?({one_turn_time}s后公布答案)"
@@ -122,4 +120,4 @@ async def card_guess(session: EventSession):
             finish_event.clear()
             # 结束游戏
             guess_service.end_game(gid)
-            logger.debug(f"游戏{type(game).__name__} gid：{game.gid}结束")
+            logger.debug(f"PCR猜卡面游戏 gid：{game.gid} 结束")
