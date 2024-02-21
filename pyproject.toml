@@ -25,6 +25,7 @@ PCR = [
     "fuzzywuzzy>=0.18.0",
     "python-Levenshtein>=0.23.0",
     "zhconv>=1.4.3",
+    "aiohttp>=3.9.3",
 ]
 
 
