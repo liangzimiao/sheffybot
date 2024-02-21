@@ -1,8 +1,11 @@
+from nonebot.adapters import Message
+from nonebot.matcher import Matcher
+from nonebot.params import ArgPlainText, CommandArg
 from nonebot.plugin import PluginMetadata, on_command
 from nonebot_plugin_saa import Image, Mention, Text
 from nonebot_plugin_session import EventSession
 
-from ..services.gacha_service import Gacha, GachaService, chara_data, logger
+from ..services.gacha_service import Chara, Gacha, GachaService, chara_data, logger
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_gacha",
@@ -56,6 +59,8 @@ async def _(session: EventSession):
     gid = session.id2
     if gid is None or uid is None:
         return
+    platform = session.platform
+    gid = f"{platform}_{gid}"
     # 获取群组对应卡池
     gacha = await gacha_service.get_gacha(gid=gid)
     # 单抽
@@ -81,6 +86,8 @@ async def _(session: EventSession):
     gid = session.id2
     if gid is None or uid is None:
         return
+    platform = session.platform
+    gid = f"{platform}_{gid}"
     # 获取群组对应卡池
     gacha = await gacha_service.get_gacha(gid=gid)
     # 十连
@@ -112,6 +119,8 @@ async def _(session: EventSession):
     gid = session.id2
     if gid is None or uid is None:
         return
+    platform = session.platform
+    gid = f"{platform}_{gid}"
     # 获取群组对应卡池
     gacha: Gacha = await gacha_service.get_gacha(gid=gid)
     # 来一井
@@ -188,18 +197,29 @@ async def _(session: EventSession):
     gid = session.id2
     if gid is None:
         return
+    platform = session.platform
+    gid = f"{platform}_{gid}"
     # 获取群组对应卡池
     gacha = await gacha_service.get_gacha(gid=gid)
     # 查看卡池 and 构造消息
+    # saa 频道消息bug
+    # for up in gacha.up:
+    #    up_chara = await chara_data.get_chara(name=up, star=3, need_icon=True)
+    #    assert up_chara.icon
+    #    msg += Text(f"{up_chara.name} ") + Image(up_chara.icon)
     msg = Text(f"本期{gacha.pool_name}卡池主打的角色：\n")
+    up_chara: list[Chara] = []
     for up in gacha.up:
-        up_chara = await chara_data.get_chara(name=up, star=3, need_icon=True)
-        assert up_chara.icon
-        msg += Text(f"{up_chara.name}") + Image(up_chara.icon)
+        up_chara.append(await chara_data.get_chara(name=up, star=3, need_icon=True))
+    for up in up_chara:
+        msg += Text(f"{up.name} ")
+    img = await gacha_service.draw_gacha(up_chara)
+    msg += Image(img)
     msg += Text(
         f"\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%"
     )
     # 发送消息
+    # print(msg)
     await msg.send()
 
 
@@ -207,14 +227,67 @@ matcher = on_command("切换卡池", priority=5)
 
 
 @matcher.handle()
-async def _(session: EventSession):
+async def _(matcher: Matcher, session: EventSession, args: Message = CommandArg()):
     # 获取群组id
     gid = session.id2
-    # 获取群组对应卡池
-    pass
-    # 切换卡池
-    pass
-    # 构造消息
-    pass
-    # 发送消息
-    pass
+    if gid is None:
+        return
+    platform = session.platform
+    gid = f"{platform}_{gid}"
+    if args.extract_plain_text():
+        matcher.set_arg("index", args)
+    else:
+        # 发送全部卡池及序号
+        # 构造消息
+        msg = (
+            Text("请选择卡池序号:\n")
+            + Text("0：取消选择\n")
+            + Text(
+                "\n".join(
+                    [
+                        f"{i+1}：{pool}"
+                        for i, pool in enumerate(gacha_service.get_all_gacha())
+                    ]
+                )
+            )
+        )
+        # 发送消息
+        await msg.send()
+
+
+@matcher.got("index")
+async def got_func(
+    session: EventSession,
+    index: str = ArgPlainText(),
+):
+    gid = session.id2
+    if gid is None:
+        return
+    platform = session.platform
+    gid = f"{platform}_{gid}"
+    try:
+        all_gacha = gacha_service.get_all_gacha()
+        if int(index) == 0:
+            await matcher.finish("已取消选择")
+        elif int(index) <= len(all_gacha) and int(index) > 0:
+            await gacha_service.set_gacha(gid=gid, pool_name=all_gacha[int(index) - 1])
+            msg = Text(f"已切换卡池为{all_gacha[int(index) - 1]}\n")
+            gacha = await gacha_service.get_gacha(gid=gid)
+            msg += Text(f"本期{gacha.pool_name}卡池主打的角色：\n")
+            up_chara: list[Chara] = []
+            for up in gacha.up:
+                up_chara.append(
+                    await chara_data.get_chara(name=up, star=3, need_icon=True)
+                )
+            for up in up_chara:
+                msg += Text(f"{up.name} ")
+            img = await gacha_service.draw_gacha(up_chara)
+            msg += Image(img)
+            msg += Text(
+                f"\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%"
+            )
+            await msg.send()
+        else:
+            await matcher.reject("请输入正确的卡池序号")
+    except ValueError:
+        await matcher.reject("请输入正确的卡池序号")

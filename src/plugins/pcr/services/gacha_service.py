@@ -60,7 +60,10 @@ class Dao:
 
 class Gacha:
     def __init__(self, pool_name: str = "BL"):
-        pool = pcr.LOCAL_POOL[pool_name]
+        try:
+            pool = pcr.LOCAL_POOL[pool_name]
+        except KeyError:
+            pool = pcr.LOCAL_POOL["BL"]
         self.pool_name = pool_name
         self.up_prob = pool["up_prob"]
         self.s3_prob = pool["s3_prob"]
@@ -205,22 +208,22 @@ class GachaService:
             return Gacha(pool_name=pool_name)
         return Gacha()
 
-    async def set_pool(self, gid: str, pool_name: str = "BL") -> None:
+    async def set_gacha(self, gid: str, pool_name: str) -> None:
         """
         修改群组对应的卡池
         """
         self.db.set_pool(gid=gid, pool_name=pool_name)
 
-    def get_all_gacha(self):
-        pcr.LOCAL_POOL
+    def match_gacha(self, index: int):
+        return list(pcr.LOCAL_POOL.keys())
 
-        return ""
+        # return ""
 
-    @staticmethod
-    def get_gacha_name(name: str, id_: int) -> str:
-        pcr.LOCAL_POOL
-
-        return ""
+    def get_all_gacha(self) -> List[str]:
+        """
+        Return a list of all gacha pools.
+        """
+        return list(pcr.LOCAL_POOL.keys())
 
     @property
     def db(self) -> Dao:
@@ -249,6 +252,17 @@ def gen_team_pic(team, size=64, star_slot_verbose=True) -> Image.Image:
 
 
 def render_icon(c: Chara, size: int, star_slot_verbose: bool = True) -> Image.Image:
+    """
+    Renders an icon for the given character with the specified size.
+
+    Args:
+        c (Chara): The character for which the icon is rendered.
+        size (int): The size of the rendered icon.
+        star_slot_verbose (bool, optional): Whether to render star slots in verbose mode. Defaults to True.
+
+    Returns:
+        Image.Image: The rendered icon image.
+    """
     pic = (
         Image.open(c.icon)
         .convert("RGBA")
