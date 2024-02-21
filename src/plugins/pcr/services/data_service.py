@@ -262,7 +262,7 @@ class PCRDataService:
             self.gadget_star_pink = Image.open(
                 f"{pcr_res_path}/priconne/gadget/star_pink.png"
             )
-            self.unknown_path = f"{pcr_res_path}/priconne/unknown.png"
+            self.unknown_path = f"{pcr_res_path}/priconne/gadget/unknown.png"
         except Exception as e:
             Logger("PCR_RES").error(f"加载PCR资源时发生错误:{e}")
 
