@@ -15,7 +15,7 @@ from .data_service import pcr_data as pcr
 pcr_res_path: Path = pcr_config.pcr_resources_path
 pcr_data_path: Path = pcr_config.pcr_data_path
 
-db_path = pcr_config.pcr_data_path / "gacha_game_data" / "pcr_gacha_gid.db"
+db_path = pcr_config.pcr_data_path / "gacha_game" / "pcr_gacha_gid.db"
 
 logger = PCRLogger("PCR_GACHA")
 

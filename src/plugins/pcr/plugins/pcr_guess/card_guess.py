@@ -18,7 +18,7 @@ blacklist_id = []
 pic_side_length = pcr_config.pcr_card_pic_side_length
 one_turn_time = pcr_config.pcr_card_one_turn_time
 
-card_db_path = pcr_config.pcr_data_path / "guess_games_data" / "pcr_card_guess.db"
+card_db_path = pcr_config.pcr_data_path / "guess_games" / "pcr_card_guess.db"
 guess_service = GuessService(card_db_path)
 
 

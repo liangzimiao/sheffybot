@@ -40,6 +40,8 @@ __plugin_meta__ = PluginMetadata(
 
 pcr_data_path: Path = pcr_config.pcr_data_path
 """PCR数据存放路径"""
+path = pcr_data_path / "calendar"
+
 gid_data = {}
 
 
@@ -117,11 +119,10 @@ async def _(session: EventSession, target: SaaTarget, matched_groups=RegexGroup(
 
 
 def load_data():
-    path = pcr_data_path / "calendar_data"
     if not path.exists():
         return
     try:
-        with open(path / "data.json", encoding="utf8") as f:
+        with open(path / "pcr_data.json", encoding="utf8") as f:
             data = json.load(f)
             for k, v in data.items():
                 gid_data[k] = v
@@ -130,10 +131,9 @@ def load_data():
 
 
 def save_data():
-    path = pcr_data_path / "calendar_data"
     path.mkdir(parents=True, exist_ok=True)
     try:
-        with open(path / "data.json", "w", encoding="utf8") as f:
+        with open(path / "pcr_data.json", "w", encoding="utf8") as f:
             json.dump(gid_data, f, ensure_ascii=False, indent=2)
     except Exception:
         traceback.print_exc()

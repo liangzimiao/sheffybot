@@ -14,7 +14,7 @@ turn_number = pcr_config.pcr_desc_turn_number
 prepare_time = pcr_config.pcr_desc_prepare_time
 one_turn_time = pcr_config.pcr_desc_one_turn_time
 
-desc_db_path = pcr_config.pcr_data_path / "guess_games_data" / "pcr_desc_guess.db"
+desc_db_path = pcr_config.pcr_data_path / "guess_games" / "pcr_desc_guess.db"
 guess_service = GuessService(desc_db_path)
 
 matcher = on_command("猜角色排名", aliases={"猜角色排行榜", "猜角色群排行"}, priority=5)

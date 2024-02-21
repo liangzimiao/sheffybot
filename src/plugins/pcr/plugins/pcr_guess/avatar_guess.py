@@ -19,7 +19,7 @@ blacklist_id = []
 patch_size = pcr_config.pcr_avatar_patch_size
 one_turn_time = pcr_config.pcr_avatar_one_turn_time
 
-avatar_db_path = pcr_config.pcr_data_path / "guess_games_data" / "pcr_avatar_guess.db"
+avatar_db_path = pcr_config.pcr_data_path / "guess_games" / "pcr_avatar_guess.db"
 guess_service = GuessService(avatar_db_path)
 
 
