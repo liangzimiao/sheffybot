@@ -1,21 +1,30 @@
 from nonebot.adapters import Message
 from nonebot.matcher import Matcher
 from nonebot.params import ArgPlainText, CommandArg
-from nonebot.plugin import PluginMetadata, on_command
+from nonebot.plugin import PluginMetadata
 from nonebot_plugin_saa import Image, Mention, Text
 from nonebot_plugin_session import EventSession
 
+from ..matcher import on_command
 from ..services.gacha_service import Chara, Gacha, GachaService, chara_data, logger
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_gacha",
     description="""
-    pcr相关的抽卡模拟
+    PCR相关的抽卡模拟
     """,
     usage="[单抽|十连|来一井|查看卡池|切换卡池]",
     config=None,
 )
-
+gacha_1_aliases = [
+    "单抽",
+    "单抽！",
+    "来发单抽",
+    "来个单抽",
+    "来次单抽",
+    "扭蛋单抽",
+    "单抽扭蛋",
+]
 gacha_10_aliases = {
     "抽十连",
     "十连",
@@ -34,15 +43,6 @@ gacha_10_aliases = {
     "10连抽",
     "来个10连",
 }
-gacha_1_aliases = [
-    "单抽",
-    "单抽！",
-    "来发单抽",
-    "来个单抽",
-    "来次单抽",
-    "扭蛋单抽",
-    "单抽扭蛋",
-]
 gacha_300_aliases = {"抽一井", "来一井", "来发井", "抽发井", "天井扭蛋", "扭蛋天井"}
 SUPER_LUCKY_LINE = 170
 

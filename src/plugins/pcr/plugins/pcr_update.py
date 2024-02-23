@@ -1,9 +1,9 @@
 from nonebot.adapters import Bot, Event
 from nonebot.plugin import PluginMetadata
-from nonebot_plugin_alconna import on_alconna
 from nonebot_plugin_apscheduler import scheduler
 
 from ..config import pcr_config
+from ..matcher import on_command
 from ..services.update_service import UpdateService, logger
 
 __plugin_meta__ = PluginMetadata(
@@ -23,7 +23,7 @@ pool = ["pool", "卡池", "pcr卡池", "PCR卡池"]
 chara = ["chara", "角色数据", "人物数据", "花名册"]
 
 
-matcher = on_alconna(
+matcher = on_command(
     "查看PCR数据",
     aliases={"查看数据"},
     priority=5,
@@ -39,7 +39,7 @@ async def _():
     await matcher.finish(result)
 
 
-pcr_update = on_alconna(
+pcr_update = on_command(
     "更新PCR数据",
     aliases={"查看人物数据", "更新人物数据", "更新人物"},
     priority=5,

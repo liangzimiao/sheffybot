@@ -6,6 +6,7 @@ from nonebot_plugin_saa import Image, Mention, Reply, Text
 from nonebot_plugin_saa.registries import get_message_id
 
 from ..config import pcr_config
+from ..matcher import on_command
 from ..services.portune_service import DailyNumberLimiter, portune_service
 
 __plugin_meta__ = PluginMetadata(
@@ -21,8 +22,7 @@ is_reply = pcr_config.pcr_portune_is_reply
 lmt = DailyNumberLimiter(max_num=pcr_config.pcr_portune_limit)
 
 
-cmd = Alconna("抽签", Option("-c", Args["target", str]))
-pcr_portune = on_alconna(cmd, aliases={"人品", "运势"}, priority=5)
+pcr_portune = on_command("抽签", aliases={"人品", "运势"}, priority=5)
 
 
 @pcr_portune.handle()
