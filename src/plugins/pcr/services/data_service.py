@@ -262,7 +262,9 @@ class PCRDataService:
             self.gadget_star_pink = Image.open(
                 f"{pcr_res_path}/priconne/gadget/star_pink.png"
             )
-            self.unknown_path = f"{pcr_res_path}/priconne/gadget/unknown.png"
+            self.unknown_path: Path = (
+                pcr_res_path / "priconne" / "gadget" / "unknown.png"
+            )
         except Exception as e:
             Logger("PCR_RES").error(f"加载PCR资源时发生错误:{e}")
 
@@ -335,6 +337,8 @@ class CharaDataService:
         return c
 
     async def get_chara_icon(self, id: str, star: Optional[int] = None) -> BytesIO:
+        if id == self.UNKNOWN:
+            return BytesIO(pcr_data.unknown_path.read_bytes())
         if star is None:
             # 先从本地缓存中获取
             icon_path = self.icon_path / f"icon_unit_{id}61.png"

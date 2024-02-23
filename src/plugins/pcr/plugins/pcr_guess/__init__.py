@@ -17,16 +17,4 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
-# from nonebot import MatcherGroup
-# from nonebot.adapters import Event
 
-# def for_pcr(event: Event) -> bool:
-#    message = event.get_plaintext()
-#    if "pcr" or "PCR" in message:
-#        return True
-#    return False
-
-# group = MatcherGroup(rule=for_pcr)
-
-# matcher1 = group.on_message()
-# matcher2 = group.on_message()
