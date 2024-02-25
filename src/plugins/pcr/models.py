@@ -69,3 +69,16 @@ class GachaTenjouResult(TypedDict):
     """UP次数"""
     hiishi: int
     """秘石数"""
+
+
+class CollectionResult(TypedDict):
+    """PCR收藏结果"""
+
+    collection_img: BytesIO
+    """收藏图片"""
+    ranking_desc: str
+    """排名"""
+    rank_text: str
+    """排名文字"""
+    cards_num: str
+    """卡片数"""

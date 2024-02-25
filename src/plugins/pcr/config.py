@@ -22,7 +22,9 @@ class Config(BaseModel, extra=Extra.ignore):
     """是否通知卡池更新"""
     # PCR 抽卡配置
     pcr_gacha_cd: int = 0
+    """抽卡间隔时间"""
     pcr_gacha_limit: int = 0
+    """每日限制次数"""
     # PCR WHOIS配置
     pcr_whois_is_reply: bool = True
     """是否启用回复"""
@@ -45,6 +47,13 @@ class Config(BaseModel, extra=Extra.ignore):
     """每轮间隔时间"""
     pcr_desc_turn_number: int = 5  # [<9]
     """单次游戏轮数"""
+    # PCR 签到配置
+    pcr_sign_is_preload: bool = True
+    """是否预加载图片"""
+    pcr_sign_col_num: int = 11
+    """每行卡片数"""
+    pcr_sign_bg_mode: int = 0  # 0: 下载好的背景 1: 随机网络背景
+    """签到背景模式"""
 
 
 global_config = get_driver().config
