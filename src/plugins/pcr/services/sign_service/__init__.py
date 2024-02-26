@@ -7,6 +7,9 @@ from pathlib import Path
 from typing import Union
 
 import httpx
+from nonebot.adapters import Bot, Event
+from nonebot.params import Depends
+from nonebot_plugin_userinfo import get_user_info
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from ...config import pcr_config
@@ -171,7 +174,9 @@ class SignService:
         for i in sorted(new_dictionary.items(), key=lambda x: x[1], reverse=True):
             q, g = i
             try:
-                rank_user = q  # await get_user_card(bot, gid, q)0#TODO
+                rank_user = await get_user_info(
+                    bot=Depends(Bot), event=Depends(Event), user_id=q
+                )
                 rank_text += f"{rank_num}. {rank_user} 好感:{g}\n"
                 rank_num += 10
             except Exception:
@@ -190,8 +195,10 @@ class SignService:
                 pass
 
         result["collection_img"] = await self.draw_collection(gid, uid)
-        # f"好感排行: \n{rank_text}......\n当前排名: {rank_num}"#TODO
-        result["rank_text"] = f"好感群排名{rank_num}"
+        result[
+            "rank_text"
+        ] = f"好感排行: \n{rank_text}......\n当前排名: {rank_num}"  # TODO
+        # result["rank_text"] = f"第{rank_num}位"
         result["ranking_desc"] = f"第{ranking}位" if ranking != -1 else "未上榜"
         result[
             "cards_num"
@@ -286,7 +293,11 @@ class SignService:
                 if q != str(uid):
                     rank_num += 1
                 else:
-                    # rank_user = await get_user_card(bot, gid, q)
+                    rank_user = await get_user_info(
+                        bot=Depends(Bot), event=Depends(Event), user_id=q
+                    )
+                    if not rank_user:
+                        rank_user = "主人"
                     break
             except Exception:
                 pass
@@ -295,7 +306,7 @@ class SignService:
         with open(self.font_path, "rb") as draw_font:
             bytes_font = BytesIO(draw_font.read())
             text_font = ImageFont.truetype(font=bytes_font, size=45)
-        draw.text(xy=(98, 580), text="欢迎回来，主人~!", font=text_font)
+        draw.text(xy=(98, 580), text=f"欢迎回来，{rank_user}~!", font=text_font)
         draw.text(
             xy=(98, 633), text=f"好感 + {goodwill} !  当前好感: {g}", font=text_font
         )

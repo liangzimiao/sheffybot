@@ -2,10 +2,11 @@ import asyncio
 import random
 from datetime import timedelta
 
-from nonebot.adapters import Event
+from nonebot.adapters import Bot, Event
 from nonebot.plugin import on_command, on_fullmatch, on_message
-from nonebot_plugin_saa import Image, Mention, Text
+from nonebot_plugin_saa import Image, Text
 from nonebot_plugin_session import EventSession
+from nonebot_plugin_userinfo import get_user_info
 
 from ...config import pcr_config
 from ...services.guess_service import GuessService, logger
@@ -21,7 +22,7 @@ matcher = on_command("猜角色排名", aliases={"猜角色排行榜", "猜角�
 
 
 @matcher.handle()
-async def display_ranking(session: EventSession):
+async def display_ranking(bot: Bot, event: Event, session: EventSession):
     gid = session.id3 if session.id3 else (session.id2 if session.id2 else session.id1)
     assert gid
     platform = session.platform
@@ -30,7 +31,12 @@ async def display_ranking(session: EventSession):
     ranking = guess_service.get_ranking(gid)
     print(ranking)  # uid, count
     msg = "【猜角色小游戏排行榜】"
-    # TODO uid转换nickname
+    for uid, count in ranking:
+        user = await get_user_info(bot=bot, event=event, user_id=uid)
+        if not user:
+            msg += f"\n{uid}：{count}次"
+        else:
+            msg += f"\n{user.user_name}：{count}次"
     await matcher.send(msg)
 
 
@@ -89,11 +95,11 @@ async def desc_guess(session: EventSession):
             txt = f"\n猜对了，真厉害！TA已经猜对{n}次了~\n正确答案是{game.answer.name}"
             img = game.answer.icon
             assert img is not None
-            msg = Mention(event.get_user_id()) + Text(txt) + Image(img)
+            msg = Text(txt) + Image(img)
             # 设置事件标识为True
             finish_event.set()
             # 发送答对
-            await msg.send()
+            await msg.send(at_sender=True)
 
         # 进入准备时间
         await asyncio.sleep(prepare_time)
