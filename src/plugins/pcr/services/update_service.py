@@ -2,7 +2,7 @@
 from ..logger import PCRLogger as Logger
 from .data_service import pcr_data
 
-logger = Logger("PCR数据更新服务")
+logger = Logger("PCR_UPDATE")
 
 
 class UpdateService:
