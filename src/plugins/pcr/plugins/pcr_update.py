@@ -56,7 +56,7 @@ async def _(bot: Bot, event: Event):
 
 
 if pcr_config.pcr_update_is_auto:
-    logger.info("定时更新PCR数据")
+    logger.debug("定时更新PCR数据")
 
     @scheduler.scheduled_job("cron", hour="17", minute="05")
     async def update_data_sdj():
