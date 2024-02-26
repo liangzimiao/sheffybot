@@ -1,6 +1,5 @@
 from io import BytesIO
 
-from nonebot.log import logger
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_saa import Image, Text
 from nonebot_plugin_session import EventSession
