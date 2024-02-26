@@ -8,7 +8,6 @@ from typing import Union
 
 import httpx
 from nonebot.adapters import Bot, Event
-from nonebot.params import Depends
 from nonebot_plugin_userinfo import get_user_info
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
@@ -120,7 +119,9 @@ class SignService:
             self.card_file_names_all.append(image)
             self.len_card = len(self.card_file_names_all)
 
-    async def get_sign_card(self, gid: str, uid: str) -> Union[str, BytesIO]:
+    async def get_sign_card(
+        self, gid: str, uid: str, bot: Bot, event: Event
+    ) -> Union[str, BytesIO]:
         # 日期
         time_tuple = time.localtime(time.time())
         last_time = f"{time_tuple[0]}年{time_tuple[1]}月{time_tuple[2]}日"
@@ -147,13 +148,17 @@ class SignService:
             todo=todo,
             last_time=last_time,
             goodwill=goodwill,
+            bot=bot,
+            event=event,
         )
         # 收集册
         card_id = (str(stamp)[:-4]).split("\\")[-1]
         self.db.add_card_num(gid, uid, int(card_id))
         return result
 
-    async def get_collection(self, gid: str, uid: str) -> CollectionResult:
+    async def get_collection(
+        self, gid: str, uid: str, bot: Bot, event: Event
+    ) -> CollectionResult:
         result: CollectionResult = {
             "collection_img": BytesIO(),
             "ranking_desc": "",
@@ -174,9 +179,8 @@ class SignService:
         for i in sorted(new_dictionary.items(), key=lambda x: x[1], reverse=True):
             q, g = i
             try:
-                rank_user = await get_user_info(
-                    bot=Depends(Bot), event=Depends(Event), user_id=q
-                )
+                rank_user = await get_user_info(bot=bot, event=event, user_id=q)
+                rank_user = rank_user.user_name if rank_user else q
                 rank_text += f"{rank_num}. {rank_user} 好感:{g}\n"
                 rank_num += 10
             except Exception:
@@ -206,7 +210,15 @@ class SignService:
         return result
 
     async def draw_card(
-        self, path: Path, gid: str, uid: str, todo: str, last_time: str, goodwill: int
+        self,
+        path: Path,
+        gid: str,
+        uid: str,
+        todo: str,
+        last_time: str,
+        goodwill: int,
+        bot: Bot,
+        event: Event,
     ) -> BytesIO:
         """绘制卡片"""
         # 背景
@@ -293,11 +305,8 @@ class SignService:
                 if q != str(uid):
                     rank_num += 1
                 else:
-                    rank_user = await get_user_info(
-                        bot=Depends(Bot), event=Depends(Event), user_id=q
-                    )
-                    if not rank_user:
-                        rank_user = "主人"
+                    rank_user = await get_user_info(bot=bot, event=event, user_id=q)
+                    rank_user = rank_user.user_name if rank_user else "主人"
                     break
             except Exception:
                 pass

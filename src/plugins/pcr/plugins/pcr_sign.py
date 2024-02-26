@@ -1,5 +1,6 @@
 from io import BytesIO
 
+from nonebot.adapters import Bot, Event
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_saa import Image, Text
 from nonebot_plugin_session import EventSession
@@ -19,7 +20,7 @@ give_okodokai = on_command("盖章", aliases={"签到", "妈!"}, priority=30, bl
 
 
 @give_okodokai.handle()
-async def _(session: EventSession):
+async def _(bot: Bot, event: Event, session: EventSession):
     # 获取群组id and uid
     gid = session.id3 if session.id3 else (session.id2 if session.id2 else None)
     assert gid
@@ -29,7 +30,7 @@ async def _(session: EventSession):
     if gid is None or uid is None:
         return
     # 签到
-    res = await sign.get_sign_card(uid=uid, gid=gid)
+    res = await sign.get_sign_card(uid=uid, gid=gid, bot=bot, event=event)
     if isinstance(res, str):
         await give_okodokai.finish(res)
     elif isinstance(res, BytesIO):
@@ -47,7 +48,7 @@ storage = on_command(
 
 
 @storage.handle()
-async def _(session: EventSession):
+async def _(bot: Bot, event: Event, session: EventSession):
     # 获取群组id and uid
     gid = session.id3 if session.id3 else (session.id2 if session.id2 else None)
     assert gid
@@ -57,7 +58,12 @@ async def _(session: EventSession):
     if gid is None or uid is None:
         return
 
-    result = await sign.get_collection(gid, uid)
+    result = await sign.get_collection(
+        gid,
+        uid,
+        bot,
+        event,
+    )
 
     # 整合信息并发送
 
