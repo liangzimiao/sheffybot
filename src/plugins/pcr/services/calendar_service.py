@@ -377,23 +377,27 @@ async def load_event_tw():
     data = await query_data("https://pcredivewiki.tw/static/data/event.json")
     if data:
         event_data["tw"] = []
-        for item in data:
-            start_time = datetime.datetime.strptime(
-                item["start_time"], r"%Y/%m/%d %H:%M"
-            )
-            end_time = datetime.datetime.strptime(item["end_time"], r"%Y/%m/%d %H:%M")
-            event = {
-                "title": item["campaign_name"],
-                "start": start_time,
-                "end": end_time,
-                "type": 1,
-            }
-            if "倍" in event["title"]:
-                event["type"] = 2
-            elif "戰隊" in event["title"]:
-                event["type"] = 3
-            event_data["tw"].append(event)
-        return 0
+        try:
+            for item in data:
+                start_time = datetime.datetime.strptime(
+                    item["start_time"], r"%Y/%m/%d %H:%M"
+                )
+                end_time = datetime.datetime.strptime(
+                    item["end_time"], r"%Y/%m/%d %H:%M"
+                )
+                event = {
+                    "title": item["campaign_name"],
+                    "start": start_time,
+                    "end": end_time,
+                    "type": 1,
+                }
+                if "倍" in event["title"]:
+                    event["type"] = 2
+                elif "戰隊" in event["title"]:
+                    event["type"] = 3
+                event_data["tw"].append(event)
+        except Exception:
+            return 0
     return 1
 
 

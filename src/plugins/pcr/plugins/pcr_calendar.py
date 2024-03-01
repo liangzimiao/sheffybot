@@ -45,7 +45,7 @@ path = pcr_data_path / "calendar"
 gid_data = {}
 
 
-matcher = on_regex(pattern=r"^([国台日])?服?日[历程](.*)")
+matcher = on_regex(pattern=r"^/?([国台日])?服?日[历程](.*)")
 
 
 @matcher.handle()
