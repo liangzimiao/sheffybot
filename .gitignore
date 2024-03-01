@@ -142,4 +142,4 @@ dmypy.json
 .env.prod
 .env.dev
 
-src/plugins/pcr/data/
+src/plugins/*/data/

@@ -14,7 +14,8 @@ dependencies = [
     "nonebot-plugin-apscheduler<1.0.0,>=0.3.0",
     "nonebot-plugin-session>=0.2.3",
     "nonebot-plugin-send-anything-anywhere>=0.5.0",
-    "nonebot-plugin-userinfo>=0.2.0",
+    "nonebot-plugin-userinfo>=0.2.2",
+    "nonebot-plugin-picstatus>=1.1.1",
 ]
 
 
@@ -28,10 +29,8 @@ PCR = [
     "zhconv>=1.4.3",
     "aiohttp>=3.9.3",
 ]
-dev = [
-    "nonebot-plugin-localstore>=0.6.0",
-    "pypinyin>=0.50.0",
-]
+
+DEV = ["nonebot-plugin-localstore>=0.6.0", "pypinyin>=0.50.0"]
 
 
 [tool.nonebot]
@@ -45,7 +44,7 @@ plugins = [
     "nonebot_plugin_session",
     "nonebot_plugin_saa",
     "nonebot_plugin_userinfo",
-    "nonebot_plugin_localstore",
+    "nonebot_plugin_htmlrender",
 ]
 plugin_dirs = ["src/plugins"]
 builtin_plugins = ["echo"]
