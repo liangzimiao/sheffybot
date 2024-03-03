@@ -48,7 +48,7 @@ class Config(BaseModel, extra=Extra.ignore):
     pcr_desc_turn_number: int = 5  # [<9]
     """单次游戏轮数"""
     # PCR 签到配置
-    pcr_sign_is_preload: bool = True
+    pcr_sign_is_preload: bool = False
     """是否预加载图片"""
     pcr_sign_col_num: int = 11
     """每行卡片数"""
