@@ -199,14 +199,14 @@ class SignService:
                 pass
 
         result["collection_img"] = await self.draw_collection(gid, uid)
-        result[
-            "rank_text"
-        ] = f"好感排行: \n{rank_text}......\n当前排名: {rank_num}"  # TODO
+        result["rank_text"] = (
+            f"好感排行: \n{rank_text}......\n当前排名: {rank_num}"  # TODO
+        )
         # result["rank_text"] = f"第{rank_num}位"
         result["ranking_desc"] = f"第{ranking}位" if ranking != -1 else "未上榜"
-        result[
-            "cards_num"
-        ] = f"{self.normalize_digit_format(len(self.db.get_cards_num(gid, uid)))}/{self.normalize_digit_format(len(self.card_file_names_all))}"
+        result["cards_num"] = (
+            f"{self.normalize_digit_format(len(self.db.get_cards_num(gid, uid)))}/{self.normalize_digit_format(len(self.card_file_names_all))}"
+        )
         return result
 
     async def draw_card(
@@ -413,7 +413,7 @@ class SignService:
         if self.is_preload:
             sign_image = self.image_cache[c_id]
         else:
-            pic_path = self.sign_res_path / "image" / f"{c_id}.png"
+            pic_path = self.stamp_path / f"{c_id}.png"
             sign_image = Image.open(pic_path)
         sign_image = sign_image.resize((80, 80), Image.Resampling.LANCZOS)
         if grey:
