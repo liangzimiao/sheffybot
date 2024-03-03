@@ -30,7 +30,6 @@ PCR = [
     "aiohttp>=3.9.3",
 ]
 
-DEV = ["nonebot-plugin-localstore>=0.6.0", "pypinyin>=0.50.0"]
 
 
 [tool.nonebot]
@@ -44,7 +43,7 @@ plugins = [
     "nonebot_plugin_session",
     "nonebot_plugin_saa",
     "nonebot_plugin_userinfo",
-    "nonebot_plugin_htmlrender",
+    "nonebot_plugin_picstatus",
 ]
 plugin_dirs = ["src/plugins"]
 builtin_plugins = ["echo"]
