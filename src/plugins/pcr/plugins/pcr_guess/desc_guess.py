@@ -41,7 +41,7 @@ async def display_ranking(bot: Bot, event: Event, session: EventSession):
 
 
 # matcher = on_fullmatch(tuple(["猜角色", "/猜角色", "猜人物", "/猜人物"]), priority=5)
-matcher = on_command("猜角色", aliases={"/猜角色", "猜人物", "/猜人物"}, priority=5)
+matcher = on_command("猜角色", aliases={"猜人物"}, priority=5)
 
 
 @matcher.handle()
