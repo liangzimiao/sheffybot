@@ -16,6 +16,8 @@ from ..logger import PCRLogger as Logger
 from ..models import Chara
 from ..utils import merge_dicts, normalize_str
 
+pcr_proxy: Optional[str] = pcr_config.pcr_proxy
+"""PCR代理"""
 pcr_data_path: Path = pcr_config.pcr_data_path
 """PCR数据存放路径"""
 pcr_res_path: Path = pcr_config.pcr_resources_path
@@ -107,7 +109,7 @@ class PCRDataService:
         url = online_pcr_data_url[types]
         Logger(f"{types.upper()}").info(f"开始获取在线PCR数据:{types.upper()}")
         try:
-            async with httpx.AsyncClient(verify=False) as client:
+            async with httpx.AsyncClient(verify=False, proxy=pcr_proxy) as client:
                 response = await client.get(url=url, follow_redirects=True, timeout=30)
                 if response.status_code == 200:
                     online_pcr_data = response.json()
@@ -427,7 +429,7 @@ class CharaDataService:
             return
         Logger(f"CHARA_{type_.upper()}").info(f"Downloading Chara {type_} from {url}")
         try:
-            async with httpx.AsyncClient(verify=False) as client:
+            async with httpx.AsyncClient(verify=False, proxy=pcr_proxy) as client:
                 rsp = await client.get(url, timeout=10)
             if 200 == rsp.status_code:
                 img = Image.open(BytesIO(rsp.content))
@@ -454,7 +456,7 @@ class CharaDataService:
             return
         Logger("CHARA_VOICE").info(f"Downloading Chara voice from {url}")
         try:
-            async with httpx.AsyncClient(verify=False) as client:
+            async with httpx.AsyncClient(verify=False, proxy=pcr_proxy) as client:
                 rsp = await client.get(url, timeout=10)
                 if 200 == rsp.status_code:
                     with open(save_path, "wb") as f:
