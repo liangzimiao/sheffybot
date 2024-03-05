@@ -2,7 +2,7 @@ import asyncio
 from datetime import timedelta
 
 from nonebot.adapters import Bot, Event
-from nonebot.plugin import on_command, on_fullmatch, on_message
+from nonebot.plugin import on_command, on_message
 from nonebot_plugin_saa import Image, Text
 from nonebot_plugin_session import EventSession
 from nonebot_plugin_userinfo import get_user_info
@@ -69,9 +69,6 @@ async def card_guess(session: EventSession):
         # 发送题目
         await msg.send()
         # 创建事件对象
-        msg = Text(
-            f"此消息为测试消息，正式版上线将删除此消息，答案是{game.answer.name}"
-        )
         await msg.send()
         finish_event = asyncio.Event()
 
