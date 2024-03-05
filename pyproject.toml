@@ -5,7 +5,7 @@ description = "sheffybot"
 readme = "README.md"
 requires-python = ">=3.10,<4.0"
 authors = [{ name = "liangzimiao", email = "2968274386@qq.com" }]
-license = { text = "Apache-2.0" }
+license = { text = "GPL-3.0" }
 dependencies = [
     "nonebot2[fastapi,httpx,websockets]<3.0.0,>=2.0.1",
     "nonebot-adapter-qq>=1.1.0",
