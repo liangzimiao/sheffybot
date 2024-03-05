@@ -182,7 +182,7 @@ class SignService:
                 rank_user = await get_user_info(bot=bot, event=event, user_id=q)
                 rank_user = rank_user.user_name if rank_user else q
                 rank_text += f"{rank_num}. {rank_user} 好感:{g}\n"
-                rank_num += 10
+                rank_num += 1
             except Exception:
                 pass
             if rank_num > 10:

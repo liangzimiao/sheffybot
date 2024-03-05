@@ -46,7 +46,8 @@ async def display_ranking(bot: Bot, event: Event, session: EventSession):
     await matcher.send(msg)
 
 
-matcher = on_fullmatch(tuple(["猜头像", "/猜头像"]), priority=5)
+# matcher = on_fullmatch(tuple(["猜头像", "/猜头像"]), priority=5)
+matcher = on_command("猜头像", aliases={"/猜头像"}, priority=5)
 
 
 @matcher.handle()
@@ -71,6 +72,10 @@ async def avatar_guess(session: EventSession):
         # 发送题目
         await msg.send()
         # 创建事件对象
+        msg = Text(
+            f"此消息为测试消息，正式版上线将删除此消息，答案是{game.answer.name}"
+        )
+        await msg.send()
         finish_event = asyncio.Event()
 
         async def check_answer(event: Event) -> bool:
