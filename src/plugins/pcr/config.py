@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 from nonebot import get_driver
 from pydantic import BaseModel, Extra
@@ -11,8 +10,6 @@ class Config(BaseModel, extra=Extra.ignore):
     # PCR 数据资源配置
     pcr_data_path: Path = Path(__file__).resolve().parent / "data"
     pcr_resources_path: Path = Path(__file__).resolve().parent / "resources"
-    # PCR 代理配置
-    pcr_proxy: Optional[str] = None
     # PCR 运势配置
     pcr_portune_limit: int = 1
     """每日限制次数"""
