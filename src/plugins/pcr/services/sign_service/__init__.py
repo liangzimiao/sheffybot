@@ -199,9 +199,7 @@ class SignService:
                 pass
 
         result["collection_img"] = await self.draw_collection(gid, uid)
-        result["rank_text"] = (
-            f"好感排行: \n{rank_text}......\n当前排名: {rank_num}"  # TODO
-        )
+        result["rank_text"] = f"好感排行: \n{rank_text}......\n当前排名: {rank_num}"
         # result["rank_text"] = f"第{rank_num}位"
         result["ranking_desc"] = f"第{ranking}位" if ranking != -1 else "未上榜"
         result["cards_num"] = (
