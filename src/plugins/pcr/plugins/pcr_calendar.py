@@ -25,14 +25,7 @@ enable_auto_select_bot()
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_calendar",
-    description="""
-    公主连结活动日历
-    日历 : 查看本群订阅服务器日历
-    [国台日]服日历 : 查看指定服务器日程
-    [国台日]服日历 on/off : 订阅/取消订阅指定服务器的日历推送
-    日历 time 时:分 : 设置日历推送时间
-    日历 status : 查看本群日历推送设置
-    """,
+    description="公主连结活动日历",
     usage="[[国台日]服日历]",
     config=None,
 )

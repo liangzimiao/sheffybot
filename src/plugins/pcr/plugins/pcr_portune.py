@@ -1,18 +1,15 @@
+from nonebot import on_command
 from nonebot.adapters import Event
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_saa import Image, Mention, Reply, Text
 from nonebot_plugin_saa.registries import get_message_id
 
 from ..config import pcr_config
-from ..matcher import on_command
 from ..services.portune_service import DailyNumberLimiter, portune_service
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_portune",
-    description="""
-    随机角色预测今日运势
-    准确率高达114.514%！
-    """,
+    description="随机角色预测今日运势,准确率高达114.514%！",
     usage="[抽签|人品|运势]",
 )
 

@@ -1,16 +1,14 @@
+from nonebot import on_command
 from nonebot.adapters import Bot, Event
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_apscheduler import scheduler
 
 from ..config import pcr_config
-from ..matcher import on_command
 from ..services.update_service import UpdateService, logger
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_update",
-    description="""
-    用于查看本地数据,用于更新本地数据
-    """,
+    description="用于查看以及更新本地PCR数据",
     usage="[重载花名册|更新卡池|查看PCR数据]",
     config=None,
 )

@@ -1,17 +1,15 @@
+from nonebot import on_command
 from nonebot.adapters import Message
 from nonebot.matcher import Matcher
 from nonebot.params import ArgPlainText, CommandArg
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_saa import Image, Text
 
-from ..matcher import on_command
 from ..services.wiki_service import WikiService
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_wiki",
-    description="""
-    PCR相关的数据查询
-    """,
+    description="PCR相关的数据查询",
     usage="[查头像|查角色|查卡面|查档案]",
     config=None,
 )

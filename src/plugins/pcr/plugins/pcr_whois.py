@@ -9,9 +9,7 @@ from ..services.whois_service import WhoIsService
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_whois",
-    description="""
-    根据花名册，快速识别角色。
-    """,
+    description="根据花名册，快速识别角色",
     usage="[xx是谁|谁是xx]",
 )
 
