@@ -151,15 +151,15 @@ async def send_calendar(gid):
         # 将光标移动到字节流的起始位置
         bytes_io.seek(0)
         msg = Image(bytes_io)
-        for _ in range(5):  # 失败重试5次
+        for _ in range(1):  # 失败重试5次
             try:
                 await msg.send_to(
                     target=PlatformTarget.deserialize(gid_data[gid]["target"])
                 )
                 logger.info(f"gid:{gid} 推送{server}日历成功")
                 break
-            except Exception:
-                logger.info(f"gid:{gid} 推送{server}日历失败")
+            except Exception as e:
+                logger.info(f"gid:{gid} 推送{server}日历失败 {e}")
             await asyncio.sleep(60)
 
 
