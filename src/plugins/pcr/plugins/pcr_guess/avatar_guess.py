@@ -72,7 +72,6 @@ async def avatar_guess(session: EventSession):
         # 发送题目
         await msg.send()
         # 创建事件对象
-        await msg.send()
         finish_event = asyncio.Event()
 
         async def check_answer(event: Event) -> bool:
