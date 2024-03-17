@@ -87,6 +87,6 @@ class CommandGroup(_Group):
 pcr_group = CommandGroup(
     cmd="pcr", cmd_aliases=("PCR", ""), priority=10, prefix_aliases=True
 )
-on_command = pcr_group.command
+
 
 # on_shell_command = pcr_group.shell_command

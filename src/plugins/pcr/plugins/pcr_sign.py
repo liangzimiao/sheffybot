@@ -1,16 +1,16 @@
 from io import BytesIO
 
+from nonebot import on_command
 from nonebot.adapters import Bot, Event
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_saa import Image, Text
 from nonebot_plugin_session import EventSession
 
-from ..matcher import on_command
 from ..services.sign_service import sign_service as sign
 
 __plugin_meta__ = PluginMetadata(
-    name="pcr签到",
-    description="从 hoshino 搬来的 pcr 签到\n签到(获得好感和 pcr 的印章)",
+    name="pcr_sign",
+    description="从 hoshino 搬来的 pcr 签到",
     usage=("[签到|盖章|收集册]"),
     config=None,
 )
@@ -23,7 +23,8 @@ give_okodokai = on_command("盖章", aliases={"签到", "妈!"}, priority=30, bl
 async def _(bot: Bot, event: Event, session: EventSession):
     # 获取群组id and uid
     gid = session.id3 if session.id3 else (session.id2 if session.id2 else None)
-    assert gid
+    if gid is None:
+        return
     platform = session.platform
     gid = f"{platform}_{gid}"
     uid = session.id1

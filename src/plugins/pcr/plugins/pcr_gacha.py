@@ -1,3 +1,4 @@
+from nonebot import on_command
 from nonebot.adapters import Message
 from nonebot.matcher import Matcher
 from nonebot.params import ArgPlainText, CommandArg
@@ -5,14 +6,11 @@ from nonebot.plugin import PluginMetadata
 from nonebot_plugin_saa import Image, Mention, Text
 from nonebot_plugin_session import EventSession
 
-from ..matcher import on_command
 from ..services.gacha_service import Chara, Gacha, GachaService, chara_data, logger
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_gacha",
-    description="""
-    PCR相关的抽卡模拟
-    """,
+    description="PCR相关的抽卡模拟",
     usage="[单抽|十连|来一井|查看卡池|切换卡池]",
     config=None,
 )

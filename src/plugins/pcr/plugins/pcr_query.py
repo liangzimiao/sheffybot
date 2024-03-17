@@ -1,12 +1,12 @@
+from nonebot import on_command
 from nonebot.plugin import PluginMetadata
 from nonebot_plugin_saa import Image, Text
 
-from ..matcher import on_command
 from ..services.query_service import QueryService
 
 __plugin_meta__ = PluginMetadata(
     name="pcr_query",
-    description="",
+    description="PCR相关的查询",
     usage=("[千里眼|rank表]"),
     config=None,
 )
