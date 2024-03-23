@@ -66,7 +66,6 @@ async def desc_guess(session: EventSession):
         # 发送准备消息
         await msg.send()
         # 创建事件对象
-        await msg.send()
         finish_event = asyncio.Event()
 
         async def check_answer(event: Event) -> bool:
