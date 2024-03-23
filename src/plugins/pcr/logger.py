@@ -17,7 +17,7 @@ class PCRLogger:
 
     def critical(self, message: str):
         return logger.opt(colors=True).critical(
-            f"<ly><y><b>{self.name}</b></y></> | {message}"
+            f"<ly><y><b>{self.name}</b></y> | {message}</>"
         )
 
     def warning(self, message: str):
