@@ -29,6 +29,7 @@ PCR = [
     "zhconv>=1.4.3",
     "aiohttp>=3.9.3",
 ]
+UMA = ["pyquery>=2.0.0"]
 
 
 [tool.nonebot]
@@ -44,7 +45,8 @@ plugins = [
     "nonebot_plugin_userinfo",
     "nonebot_plugin_picstatus",
 ]
-plugin_dirs = ["src/plugins"]
+plugin_dirs = ["src/dev_plugins"]
+#plugin_dirs = ["src/plugins"]
 builtin_plugins = ["echo"]
 
 
@@ -52,10 +54,7 @@ builtin_plugins = ["echo"]
 includes = []
 
 [tool.pdm.dev-dependencies]
-test = [
-    "nonebug>=0.3.6",
-    "pytest-asyncio>=0.23.5.post1",
-]
+test = ["nonebug>=0.3.6", "pytest-asyncio>=0.23.5.post1"]
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
